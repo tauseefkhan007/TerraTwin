@@ -6919,13 +6919,17 @@
                 section.classList.remove('source-locked-section');
             };
             try {
-                const [datasetResponse, rankingResponse] = await Promise.all([
+                const [datasetResponse, rankingResponse, terrainLockResponse] = await Promise.all([
                     fetch('analogx_dataset.json', { cache: 'no-store' }),
                     fetch('terrain_rankings.json', { cache: 'no-store' }),
+                    fetch('terrain_source_lock.json', { cache: 'no-store' }),
                 ]);
                 if (!datasetResponse.ok || !rankingResponse.ok) return false;
                 const dataset = await datasetResponse.json();
                 const rankings = await rankingResponse.json();
+                const terrainLock = terrainLockResponse.ok ? await terrainLockResponse.json() : { ready: false, status: 'blocked_missing_terrain_audit' };
+                const terrainSourceVerified = terrainLock.ready === true && terrainLock.status === 'ready';
+                window.__nakshTerrainSourceLock = terrainLock;
                 importedTerrainSites = (dataset.earth_features || []).map(row => {
                     const slug = String(row.name).toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '');
                     const siteId = `terrain-${slug}`;
@@ -6964,7 +6968,7 @@
                 const exploreRows = jezero.slice(0, 12).map(row => [row.rank, row.site_name, row.country, `${fmt(row.score)}/100`, `${fmt(row.features.slope)}°`, `${fmt(row.features.roughness)}`, `${fmt(row.features.relief)} m`]);
                 renderSection(
                     'explore-section',
-                    'Terrain ranking · 49 Earth records',
+                    terrainSourceVerified ? 'Source-verified terrain · 49 Earth records' : 'Terrain ranking · 49 Earth records',
                     'Explore Sites',
                     `Top terrain matches for ${targets.find(target => target.id === 'mars-jezero')?.name || 'the selected Mars target'}. Select another target in Global Search for the second ranking.`,
                     table(['#', 'Location', 'Country', 'Score', 'Slope', 'Roughness', 'Relief'], exploreRows),
@@ -6972,7 +6976,9 @@
 
                 const validationContent = make('div');
                 validationContent.append(
-                    make('p', `${dataset.counts.earth_feature_records} Earth records, ${dataset.counts.planetary_target_records} Mars targets, ${dataset.counts.demo_candidate_records} demo candidates, and a ${dataset.counts.sensitivity_audit_characters}-character sensitivity audit are loaded. The imported repository remains provisional until the official Resources-tab audit passes.`),
+                    make('p', terrainSourceVerified
+                        ? `${dataset.counts.earth_feature_records} Earth records and ${dataset.counts.planetary_target_records} Mars targets are source-verified for terrain-only screening from the pinned NASADEM/MOLA products; this is not final challenge evidence. Climate, geology, radiation, landing safety and environmental equivalence are not inferred.`
+                        : `${dataset.counts.earth_feature_records} Earth records, ${dataset.counts.planetary_target_records} Mars targets, ${dataset.counts.demo_candidate_records} demo candidates, and a ${dataset.counts.sensitivity_audit_characters}-character sensitivity audit are loaded. The imported repository remains provisional until the official Resources-tab audit passes.`),
                     table(['Check', 'Result'], [
                         ['Earth feature coverage', `${dataset.counts.earth_feature_records}/49 records`],
                         ['Mars target coverage', `${dataset.counts.planetary_target_records}/2 records`],
@@ -7023,14 +7029,17 @@
                 section.classList.add('source-locked-section');
             };
             try {
-                const [response, dataAuditResponse] = await Promise.all([
+                const [response, dataAuditResponse, terrainLockResponse] = await Promise.all([
                     fetch('source_lock.json', { cache: 'no-store' }),
                     fetch('data_audit.json', { cache: 'no-store' }),
+                    fetch('terrain_source_lock.json', { cache: 'no-store' }),
                 ]);
                 if (!response.ok) throw new Error(`source_lock.json HTTP ${response.status}`);
                 const audit = await response.json();
                 const dataAudit = dataAuditResponse.ok ? await dataAuditResponse.json() : null;
+                const terrainAudit = terrainLockResponse.ok ? await terrainLockResponse.json() : null;
                 window.__nakshDataAudit = dataAudit;
+                window.__nakshTerrainSourceLock = terrainAudit;
                 if (!dataAudit || dataAudit.status !== 'pass') throw new Error('dashboard/data_audit.json failed structural validation');
                 window.__terratwinSourceLock = audit;
                 const terrainViewsReady = await renderImportedTerrainViews();
@@ -7040,7 +7049,9 @@
                 }
                 const notice = document.getElementById('scientific-source-lock-notice');
                 const message = document.getElementById('scientific-source-lock-message');
-                if (message) message.textContent = 'Verified multi-modal scores are paused. Imported terrain records remain available as provisional evidence in Global Search.';
+                if (message) message.textContent = terrainAudit?.ready === true && terrainAudit?.status === 'ready'
+                    ? 'Verified multi-modal scores are paused. Source-verified terrain-only records remain available in Global Search.'
+                    : 'Verified multi-modal scores are paused. Imported terrain records remain available as provisional evidence in Global Search.';
                 if (notice) notice.hidden = terrainViewsReady;
                 if (!terrainViewsReady) {
                     lockSection('explore-section', 'Explore Sites is waiting for verified data');
@@ -7057,7 +7068,9 @@
                 const terrainViewsReady = await renderImportedTerrainViews();
                 const notice = document.getElementById('scientific-source-lock-notice');
                 const message = document.getElementById('scientific-source-lock-message');
-                if (message) message.textContent = 'Verified multi-modal scores are paused because the data audit is unavailable. Imported terrain records remain provisional.';
+                if (message) message.textContent = window.__nakshTerrainSourceLock?.ready === true && window.__nakshTerrainSourceLock?.status === 'ready'
+                    ? 'Verified multi-modal scores are paused because the global audit is unavailable. Source-verified terrain-only records remain available in Global Search.'
+                    : 'Verified multi-modal scores are paused because the data audit is unavailable. Imported terrain records remain provisional.';
                 if (notice) notice.hidden = terrainViewsReady;
                 if (!terrainViewsReady) {
                     lockSection('explore-section', 'Explore Sites is waiting for verified data');

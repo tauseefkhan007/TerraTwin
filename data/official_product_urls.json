@@ -3,6 +3,15 @@
   "official_resources_url": "https://www.spaceappschallenge.org/2026/challenges/permanent-moon-base-locations-and-mars/?tab=resources",
   "note": "These are the exact product endpoints selected from the approved NASA portals. They are provenance targets for re-ingestion; they do not retroactively certify the inherited global_results.json snapshot.",
   "products": {
+    "earth_elevation_nasadem_hgt_v1": {
+      "dataset_name": "NASADEM Merged DEM Global 1 arc second V001",
+      "provider": "NASA JPL / NASA EOSDIS Land Processes Distributed Active Archive Center",
+      "approved_portal_url": "https://search.earthdata.nasa.gov",
+      "exact_product_url": "https://doi.org/10.5067/MEASURES/NASADEM/NASADEM_HGT.001",
+      "version_or_product_id": "NASADEM_HGT.001",
+      "coverage_and_resolution": "Global land coverage at 1 arc-second posting, approximately 30 m.",
+      "used_for": "The pinned 49-record Earth terrain import."
+    },
     "earth_elevation_aster_gdem_v3": {
       "dataset_name": "ASTER Global Digital Elevation Model V003",
       "provider": "NASA / METI / ASTER Science Team / LP DAAC",

@@ -173,6 +173,7 @@ def _scientific_data() -> dict[str, Any]:
     return {
         "policy": _read_policy(),
         "source_lock": _read_dashboard_json("source_lock.json"),
+        "terrain_source_lock": _read_dashboard_json("terrain_source_lock.json"),
         "data_audit": _read_dashboard_json("data_audit.json"),
         "dataset": _read_dashboard_json("analogx_dataset.json"),
         "terrain": _read_dashboard_json("terrain_rankings.json"),
@@ -233,6 +234,7 @@ def datasets() -> dict[str, Any]:
 
     data = _scientific_data()
     source_lock = data["source_lock"]
+    terrain_source_lock = data["terrain_source_lock"]
     audit = data["data_audit"]
     dataset = data["dataset"]
     return {
@@ -244,6 +246,14 @@ def datasets() -> dict[str, Any]:
             "status": source_lock.get("status"),
             "blocked_sources": len(source_lock.get("blocked_sources", [])),
             "missing_provenance": len(source_lock.get("missing_provenance", [])),
+        },
+        "terrain_source_lock": {
+            "ready": bool(terrain_source_lock.get("ready")),
+            "status": terrain_source_lock.get("status"),
+            "scope": terrain_source_lock.get("scope"),
+            "records": len(terrain_source_lock.get("source_records", {})),
+            "earth_records": terrain_source_lock.get("dataset", {}).get("earth_records"),
+            "mars_records": terrain_source_lock.get("dataset", {}).get("mars_records"),
         },
         "data_audit": {
             "status": audit.get("status"),
@@ -263,6 +273,7 @@ def datasets() -> dict[str, Any]:
 @app.get("/api/methodology")
 def methodology() -> dict[str, Any]:
     data = _scientific_data()
+    terrain_lock = data["terrain_source_lock"]
     return {
         "official_resources_url": data["policy"]["official_resources_url"],
         "guardrails": data["policy"].get("required_guardrails", []),
@@ -270,8 +281,13 @@ def methodology() -> dict[str, Any]:
             "ready": bool(data["source_lock"].get("ready")),
             "status": data["source_lock"].get("status"),
         },
+        "terrain_source_lock": {
+            "ready": bool(terrain_lock.get("ready")),
+            "status": terrain_lock.get("status"),
+            "scope": terrain_lock.get("scope"),
+        },
         "terrain_method": data["terrain"].get("method", {}),
-        "provisional_note": "Imported repository terrain scores remain provisional until every displayed input passes the official Resources-tab provenance audit.",
+        "terrain_note": "Source-verified terrain-only screening is available for the pinned NASADEM/MOLA import. Climate, geology, radiation, landing safety and environmental equivalence are not inferred.",
     }
 
 
@@ -290,12 +306,17 @@ def candidates(
         items.extend(_planetary_targets(data["target_catalog"], body))
     if target_id:
         items = [item for item in items if item["id"] == target_id]
+    if data["terrain_source_lock"].get("ready"):
+        for item in items:
+            if item.get("record_type") == "imported_earth_terrain":
+                item["evidence_status"] = "source_verified_terrain_only"
     return {
         "body": body,
         "target_id": target_id,
         "count": len(items),
         "limit": limit,
         "source_lock_ready": bool(data["source_lock"].get("ready")),
+        "terrain_source_lock_ready": bool(data["terrain_source_lock"].get("ready")),
         "items": items[:limit],
     }
 
@@ -313,6 +334,41 @@ def candidate_comparison(candidate_id: str, target_id: str | None = None) -> dic
     ranking_rows = data["terrain"].get("rankings", {}).get(target["id"], [])
     ranking = next((row for row in ranking_rows if row.get("site_name") == candidate["name"]), None)
     source_ready = bool(data["source_lock"].get("ready"))
+    terrain_ready = bool(data["terrain_source_lock"].get("ready"))
+    if terrain_ready:
+        candidate["evidence_status"] = "source_verified_terrain_only"
+    score = ranking.get("score") if ranking else None
+    if source_ready:
+        comparison = {
+            "similarity_score": score,
+            "terrain_similarity_score": score,
+            "provisional_similarity_score": None,
+            "rank": ranking.get("rank") if ranking else None,
+            "terrain_rank": ranking.get("rank") if ranking else None,
+            "coverage_score": 100 if ranking else 0,
+            "status": "source_verified",
+        }
+    elif terrain_ready:
+        comparison = {
+            "similarity_score": None,
+            "terrain_similarity_score": score,
+            "provisional_similarity_score": None,
+            "rank": None,
+            "terrain_rank": ranking.get("rank") if ranking else None,
+            "coverage_score": 100 if ranking else 0,
+            "status": "source_verified_terrain_only",
+        }
+    else:
+        comparison = {
+            "similarity_score": None,
+            "terrain_similarity_score": None,
+            "provisional_similarity_score": score,
+            "rank": None,
+            "terrain_rank": None,
+            "coverage_score": 100 if ranking else 0,
+            "status": "provisional_source_lock_pending",
+        }
+    comparison["guardrail"] = "Terrain similarity is source-verified only for slope, roughness and relief; it is not final challenge evidence, a climate match, geology match, radiation assessment, landing-site safety assessment or environmental equivalence claim."
     return {
         "candidate": candidate,
         "target": {
@@ -321,14 +377,7 @@ def candidate_comparison(candidate_id: str, target_id: str | None = None) -> dic
             "name": target.get("name"),
             "data_source": target.get("data_source"),
         },
-        "comparison": {
-            "similarity_score": ranking.get("score") if ranking and source_ready else None,
-            "provisional_similarity_score": ranking.get("score") if ranking and not source_ready else None,
-            "rank": ranking.get("rank") if ranking and source_ready else None,
-            "coverage_score": 100 if ranking else 0,
-            "status": "source_verified" if source_ready else "provisional_source_lock_pending",
-            "guardrail": "Terrain similarity is not a landing-site safety assessment or environmental equivalence claim.",
-        },
+        "comparison": comparison,
     }
 
 
@@ -339,9 +388,12 @@ def candidate(candidate_id: str) -> dict[str, Any]:
     item = next((item for item in all_items if item["id"] == candidate_id), None)
     if item is None:
         raise HTTPException(status_code=404, detail="Candidate not found")
+    if data["terrain_source_lock"].get("ready") and item.get("record_type") == "imported_earth_terrain":
+        item["evidence_status"] = "source_verified_terrain_only"
     return {
         "item": item,
         "source_lock_ready": bool(data["source_lock"].get("ready")),
+        "terrain_source_lock_ready": bool(data["terrain_source_lock"].get("ready")),
         "official_resources_url": data["policy"]["official_resources_url"],
     }
 

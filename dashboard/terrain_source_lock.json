@@ -1,0 +1,68 @@
+{
+  "schema_version": 1,
+  "status": "ready",
+  "ready": true,
+  "scope": "terrain_only_import",
+  "message": "The imported 49 Earth and 2 Mars terrain records are traceable to the approved NASA Earthdata and PDS products listed below. This terrain-only result is not final challenge evidence and does not verify climate, geology, radiation, landing safety or environmental equivalence.",
+  "official_resources_url": "https://www.spaceappschallenge.org/2026/challenges/permanent-moon-base-locations-and-mars/?tab=resources",
+  "dataset": {
+    "repository": "https://github.com/hazraanirban2006-boop/analogx-hackathon-ready",
+    "commit": "76f3dbf1f418eb36cf244033468c8d2fcc249bfa",
+    "commit_date": "2026-11-14T14:20:23Z",
+    "earth_records": 49,
+    "mars_records": 2,
+    "raw_inventory": {
+      "nasadem_hgt_tiles": 150,
+      "nasadem_zip_caches": 150,
+      "mola_img_files": 1,
+      "mola_label_files": 1
+    },
+    "inventory_basis": "Pinned Git tree inventory verified on 2026-11-15; the repository build script documents the NASADEM Earthdata search and MOLA PDS processing path."
+  },
+  "source_records": {
+    "earth_elevation": {
+      "dataset_name": "NASADEM Merged DEM Global 1 arc second V001",
+      "provider": "NASA JPL / NASA EOSDIS Land Processes Distributed Active Archive Center",
+      "resource_url": "https://search.earthdata.nasa.gov",
+      "exact_product_url": "https://doi.org/10.5067/MEASURES/NASADEM/NASADEM_HGT.001",
+      "retrieval_date": "2026-11-14",
+      "version_or_product_id": "NASADEM_HGT.001",
+      "processing_step": "The pinned source build searches NASA Earthdata for NASADEM_HGT version 001 tiles, reads the 3601 x 3601 big-endian HGT grids, merges adjacent tiles, reprojects to a local azimuthal-equidistant metric CRS, resamples to a 5 x 5 grid comparable to the MOLA patch, and computes median slope, elevation standard deviation and P90-P10 relief.",
+      "coverage_and_resolution": "Global land coverage at 1 arc-second posting, approximately 30 m; each candidate uses a local 5 x 5 MOLA-comparable terrain patch.",
+      "quality_flags": [
+        "The pinned snapshot contains 150 NASADEM HGT tiles and 150 ZIP caches.",
+        "The imported artifact has 49 Earth records and every record has slope, roughness and relief.",
+        "Earth elevation is retained as context and is not compared directly with Mars elevation because planetary datums differ.",
+        "Terrain-only evidence; climate, geology, radiation, atmosphere and landing safety are not inferred."
+      ],
+      "source_snapshot_url": "https://github.com/hazraanirban2006-boop/analogx-hackathon-ready/tree/76f3dbf1f418eb36cf244033468c8d2fcc249bfa"
+    },
+    "mars_elevation": {
+      "dataset_name": "Mars Global Surveyor MOLA MEGDR Topography",
+      "provider": "NASA Planetary Data System Geosciences Node",
+      "resource_url": "https://pds.nasa.gov",
+      "exact_product_url": "https://pds-geosciences.wustl.edu/mgs/mgs-m-mola-5-megdr-l3-v1/mgsl_300x/meg004/megt90n000cb.img",
+      "dataset_page_url": "https://pds-geosciences.wustl.edu/missions/mgs/megdr.html",
+      "retrieval_date": "2026-11-14",
+      "version_or_product_id": "MGS-M-MOLA-5-MEGDR-L3-V1",
+      "processing_step": "The pinned source build validates the MOLA label and binary size, reads the big-endian 16-bit MEGDR image, extracts 5 x 5 patches at Jezero Crater and Olympus Mons flank, and computes median slope, elevation standard deviation and P90-P10 relief.",
+      "coverage_and_resolution": "Global Mars topography at 4 pixels per degree; the source build uses the MOLA MEGDR image and its label.",
+      "quality_flags": [
+        "The pinned snapshot contains one MOLA image and one MOLA label.",
+        "The imported artifact has two Mars target records and every record has slope, roughness and relief.",
+        "Terrain-only evidence; climate, geology, radiation, atmosphere and landing safety are not inferred."
+      ],
+      "source_snapshot_url": "https://github.com/hazraanirban2006-boop/analogx-hackathon-ready/tree/76f3dbf1f418eb36cf244033468c8d2fcc249bfa"
+    }
+  },
+  "method": {
+    "scored_features": [
+      "slope",
+      "roughness",
+      "relief"
+    ],
+    "formula": "100 * exp(-mean(slope_relative_delta, log1p_roughness_delta, log1p_relief_delta))",
+    "coverage_score": 100,
+    "guardrail": "A terrain similarity score is not final challenge evidence, a landing-site safety assessment, a climate match, a geology match, a radiation assessment or an environmental equivalence claim."
+  }
+}

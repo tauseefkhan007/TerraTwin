@@ -14,7 +14,7 @@ TerraTwin is currently a fast static-data MVP with an optional local FastAPI ser
 - **Feature store:** cached JSON/GeoJSON and local files; SQLite is the planned compact application database once the source-compliant catalog is locked.
 - **Authentication:** small FastAPI service with GitHub/Google OAuth, signed HTTP-only session cookies and environment-only provider credentials.
 - **Collaboration:** GitHub branches and pull requests.
-- **Source policy:** final evidence may use only the official NASA Space Apps 2026 Resources tab; inherited PTAE inputs are provisional and must be revalidated.
+- **Source policy:** final evidence may use only the official NASA Space Apps 2026 Resources tab; the imported terrain path has its own NASADEM/MOLA lock, while inherited multi-modal inputs remain blocked.
 
 The current demo still runs as static HTML/CSS/JavaScript. FastAPI now exposes read-only dataset, methodology, candidate and comparison endpoints in addition to the optional Google/GitHub sign-in flow; a React client remains a future extraction path.
 
@@ -81,9 +81,9 @@ The static dashboard is the primary presentation layer and reads the validated J
 - `/api/datasets` for source-lock and structural-audit status;
 - `/api/methodology` for the formula and required guardrails;
 - `/api/candidates` and `/api/candidates/{id}` for body-separated records;
-- `/api/candidates/{id}/comparison` for provisional-versus-verified terrain comparisons.
+- `/api/candidates/{id}/comparison` for terrain-only evidence with explicit global-versus-terrain status.
 
-When the source lock is blocked, comparison responses keep `similarity_score` null and place the imported value in `provisional_similarity_score`. This prevents an API consumer from treating an unverified import as a final result.
+`dashboard/terrain_source_lock.json` independently certifies the 49 Earth and 2 Mars imported records for slope, roughness and relief. When it is ready but the global source lock is blocked, comparison responses keep the multi-modal `similarity_score` null and place the source-verified terrain value in `terrain_similarity_score` with status `source_verified_terrain_only`. If the terrain audit is also unavailable, the value is kept in `provisional_similarity_score`.
 
 ### 3.1 Authentication boundary
 
@@ -93,7 +93,7 @@ The dashboard has a local demo path and an optional OAuth path. When the FastAPI
 
 For the challenge submission, the source of truth is the official [NASA Space Apps 2026 Resources tab](https://www.spaceappschallenge.org/2026/challenges/permanent-moon-base-locations-and-mars/?tab=resources). The exact resources captured from that page are recorded in [`data/official_resources_catalog.json`](data/official_resources_catalog.json): NASA Earthdata Search, NASA Worldview, NASA PDS, NASA LRO, NASA LRO Diviner, CSA RADARSAT resources, ESA Copernicus Data Space, ESA Open Science Catalog and JAXA G-Portal.
 
-No URL outside that catalog may be used in final challenge evidence. `src/source_lock.py` validates exact resource URLs and required provenance fields; `dashboard/source_lock.json` is the generated audit consumed by the frontend. The inherited adapters and result JSON remain available for regression testing only and are hidden from the ranking workspace until the audit passes.
+No URL outside that catalog may be used in final challenge evidence. `src/source_lock.py` validates the global multi-modal result snapshot; `src/app_data_validation.py` validates the narrower `dashboard/terrain_source_lock.json` against the exact NASADEM DOI and MOLA product URL. The inherited adapters and result JSON remain available for regression testing only and are hidden from the ranking workspace until the global audit passes.
 
 ### 3.3 Ingestion layer
 

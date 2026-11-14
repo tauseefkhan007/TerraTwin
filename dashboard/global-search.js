@@ -41,7 +41,7 @@
     };
 
     const state = {
-        data: null, analogx: null, terrain: null, sourceLock: null, targetId: null, weights: { ...PRESETS.balanced }, aggregation: 'geometric',
+        data: null, analogx: null, terrain: null, sourceLock: null, terrainSourceLock: null, targetId: null, weights: { ...PRESETS.balanced }, aggregation: 'geometric',
         category: 'all', selectedSite: null, map: null, markerLayer: null, windowLayer: null, chart: null,
     };
 
@@ -72,6 +72,7 @@
     const siteById = id => state.data.sites.find(site => site.id === id);
     const currentTarget = () => state.data.targets.find(t => t.id === state.targetId);
     const sourceLockReady = () => Boolean(state.sourceLock && state.sourceLock.ready === true && state.sourceLock.status === 'ready');
+    const terrainSourceLockReady = () => Boolean(state.terrainSourceLock && state.terrainSourceLock.ready === true && state.terrainSourceLock.status === 'ready');
 
     function renderSourceLock() {
         const audit = state.sourceLock || {
@@ -174,11 +175,12 @@
             : 0;
         const scoreHeading = $('gs-analogx-score-heading');
         const footnote = $('gs-analogx-footnote');
-        if (scoreHeading) scoreHeading.textContent = sourceLockReady() ? 'Terrain score' : 'Provisional terrain score';
-        if (footnote) footnote.textContent = sourceLockReady()
-            ? 'Terrain score is a transparent screening metric. Climate, geology, landing safety and environmental equivalence are not inferred.'
+        const terrainReady = terrainSourceLockReady();
+        if (scoreHeading) scoreHeading.textContent = terrainReady ? 'Terrain score · source-verified' : 'Provisional terrain score';
+        if (footnote) footnote.textContent = terrainReady
+            ? 'Source-verified terrain-only screening result, not final challenge evidence. Climate, geology, radiation, landing safety and environmental equivalence are not inferred.'
             : 'Provisional imported terrain score. Source audit is pending; do not use it as final challenge evidence. Climate, geology, landing safety and environmental equivalence are not inferred.';
-        const statusLabel = sourceLockReady() ? 'source-verified' : 'provisional imported baseline; final multi-modal scores paused';
+        const statusLabel = terrainReady ? 'source-verified terrain import; multi-modal ranking remains separately gated' : 'provisional imported baseline; final multi-modal scores paused';
         summary.textContent = `${all.length} imported records loaded: ${earth.length} Earth terrain records and ${mars.length} Mars targets, plus ${demoCount} demo candidates and a sensitivity audit. Terrain score compares slope, roughness and relief against ${target?.name || 'the selected target'}; ${terrainCoverage}% of the three terrain fields are populated across Earth records. Status: ${statusLabel}.`;
         const number = value => Number.isFinite(Number(value)) ? Number(value).toFixed(2) : '—';
         body.replaceChildren(...rows.map(row => el('tr', {}, [
@@ -617,16 +619,22 @@
         const root = $('global-tab');
         if (!root) return;
         try {
-            const [resultsResponse, lockResponse, analogxResponse, terrainResponse] = await Promise.all([
+            const [resultsResponse, lockResponse, analogxResponse, terrainResponse, terrainLockResponse] = await Promise.all([
                 fetch('global_results.json', { cache: 'no-store' }),
                 fetch('source_lock.json', { cache: 'no-store' }),
                 fetch('analogx_dataset.json', { cache: 'no-store' }),
                 fetch('terrain_rankings.json', { cache: 'no-store' }),
+                fetch('terrain_source_lock.json', { cache: 'no-store' }),
             ]);
             if (!resultsResponse.ok) throw new Error(`global_results.json HTTP ${resultsResponse.status}`);
             state.data = await resultsResponse.json();
             state.analogx = analogxResponse.ok ? await analogxResponse.json() : null;
             state.terrain = terrainResponse.ok ? await terrainResponse.json() : null;
+            state.terrainSourceLock = terrainLockResponse.ok ? await terrainLockResponse.json() : {
+                ready: false,
+                status: 'blocked_missing_terrain_audit',
+                message: 'Terrain-only source audit unavailable; imported scores remain provisional.',
+            };
             state.sourceLock = lockResponse.ok ? await lockResponse.json() : {
                 ready: false,
                 status: 'blocked_missing_audit',
@@ -641,6 +649,7 @@
         window.__terratwinSourceLock = state.sourceLock;
         window.__nakshAnalogX = state.analogx;
         window.__nakshTerrainRankings = state.terrain;
+        window.__nakshTerrainSourceLock = state.terrainSourceLock;
         renderSourceLock();
         renderAnalogXDataset();
         $('gs-analogx-filter')?.addEventListener('input', renderAnalogXDataset);

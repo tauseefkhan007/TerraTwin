@@ -13,7 +13,7 @@
   },
   "errors": [],
   "generated_on": "2026-11-15",
-  "meaning": "Structural checks passed; source_lock.ready still controls whether numeric multi-modal results may be presented as official challenge evidence.",
+  "meaning": "Structural checks passed; terrain_source_lock.ready controls the imported terrain-only evidence path, while source_lock.ready separately controls multi-modal challenge evidence.",
   "schema_version": 1,
   "source_lock": {
     "blocked_sources": 6,
@@ -21,5 +21,12 @@
     "ready": false,
     "status": "blocked_inherited_baseline"
   },
-  "status": "pass"
+  "status": "pass",
+  "terrain_source_lock": {
+    "earth_records": 49,
+    "mars_records": 2,
+    "ready": true,
+    "records": 2,
+    "status": "ready"
+  }
 }

@@ -40,10 +40,13 @@ class ApplicationDataValidationTests(unittest.TestCase):
             self.assertEqual([row["rank"] for row in rows], list(range(1, 50)))
             self.assertEqual(rows, sorted(rows, key=lambda row: row["score"], reverse=True))
 
-    def test_imported_data_stays_provisional_until_source_lock_passes(self):
+    def test_terrain_import_is_source_verified_but_global_lock_stays_separate(self):
         self.assertFalse(self.audit["source_lock"]["ready"])
         self.assertEqual(self.audit["source_lock"]["status"], "blocked_inherited_baseline")
         self.assertGreater(self.audit["source_lock"]["blocked_sources"], 0)
+        self.assertTrue(self.audit["terrain_source_lock"]["ready"])
+        self.assertEqual(self.audit["terrain_source_lock"]["status"], "ready")
+        self.assertEqual(self.audit["terrain_source_lock"]["records"], 2)
 
 
 if __name__ == "__main__":

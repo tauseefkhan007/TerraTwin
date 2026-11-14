@@ -17,7 +17,7 @@ from datetime import date
 from pathlib import Path
 from typing import Any
 
-from .source_lock import audit_results, load_json
+from .source_lock import audit_results, load_json, normalize_url, official_resource_urls
 
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -302,6 +302,132 @@ def _validate_global_results(payload: dict[str, Any] | None, errors: list[dict[s
     return {"global_sites": len(sites), "global_targets": len(targets)}
 
 
+def _validate_terrain_source_lock(
+    lock: dict[str, Any] | None,
+    dataset: dict[str, Any] | None,
+    policy: dict[str, Any] | None,
+    official_catalog: dict[str, Any] | None,
+    exact_products: dict[str, Any] | None,
+    cache_manifest: dict[str, Any] | None,
+    errors: list[dict[str, str]],
+) -> dict[str, Any]:
+    """Validate the narrower source lock for the imported terrain-only path.
+
+    This lock is intentionally separate from the global multi-modal lock.  It
+    certifies only that the displayed slope/roughness/relief import traces to
+    the pinned NASADEM and MOLA products; it cannot unlock climate, geology,
+    landing-safety, or environmental-equivalence claims.
+    """
+
+    if not isinstance(lock, dict):
+        _add(errors, "dashboard/terrain_source_lock.json", "Terrain source lock must be a JSON object.")
+        return {"status": "missing", "ready": False, "records": 0}
+
+    status = lock.get("status")
+    ready = lock.get("ready")
+    if status != "ready":
+        _add(errors, "dashboard/terrain_source_lock.json.status", "Terrain-only source lock must be ready.")
+    if ready is not True:
+        _add(errors, "dashboard/terrain_source_lock.json.ready", "Terrain-only source lock must expose ready=true.")
+    if lock.get("scope") != "terrain_only_import":
+        _add(errors, "dashboard/terrain_source_lock.json.scope", "Terrain source lock scope must be terrain_only_import.")
+
+    earth_rows = (dataset or {}).get("earth_features", []) if isinstance(dataset, dict) else []
+    mars_rows = (dataset or {}).get("planetary_targets", []) if isinstance(dataset, dict) else []
+    dataset_source = (dataset or {}).get("source", {}) if isinstance(dataset, dict) else {}
+    lock_dataset = lock.get("dataset") if isinstance(lock.get("dataset"), dict) else {}
+    expected_record_counts = {"earth_records": len(earth_rows), "mars_records": len(mars_rows)}
+    for key, expected in expected_record_counts.items():
+        if lock_dataset.get(key) != expected:
+            _add(errors, f"dashboard/terrain_source_lock.json.dataset.{key}", f"Expected {expected}, found {lock_dataset.get(key)!r}.")
+    if expected_record_counts != {"earth_records": 49, "mars_records": 2}:
+        _add(errors, "dashboard/analogx_dataset.json", "The pinned terrain import must contain exactly 49 Earth and 2 Mars records.")
+
+    for field in ("repository", "commit"):
+        if lock_dataset.get(field) != dataset_source.get(field):
+            _add(errors, f"dashboard/terrain_source_lock.json.dataset.{field}", "Terrain lock must match the imported dataset source snapshot.")
+    if not isinstance(lock_dataset.get("commit_date"), str) or not lock_dataset["commit_date"].strip():
+        _add(errors, "dashboard/terrain_source_lock.json.dataset.commit_date", "Pinned source commit date is required.")
+
+    raw_inventory = lock_dataset.get("raw_inventory") if isinstance(lock_dataset.get("raw_inventory"), dict) else {}
+    manifest_raw = (cache_manifest or {}).get("raw_cache", {}) if isinstance(cache_manifest, dict) else {}
+    expected_inventory = {
+        "nasadem_hgt_tiles": manifest_raw.get("nasa_dem_hgt_tiles", {}).get("file_count"),
+        "nasadem_zip_caches": manifest_raw.get("nasa_dem_zip_caches", {}).get("file_count"),
+        "mola_img_files": 1,
+        "mola_label_files": 1,
+    }
+    for key, expected in expected_inventory.items():
+        if expected is None or raw_inventory.get(key) != expected:
+            _add(errors, f"dashboard/terrain_source_lock.json.dataset.raw_inventory.{key}", f"Expected {expected!r}, found {raw_inventory.get(key)!r}.")
+    if isinstance(cache_manifest, dict) and cache_manifest.get("source_commit") != lock_dataset.get("commit"):
+        _add(errors, "data/analogx/cache_manifest.json.source_commit", "Raw cache manifest and terrain lock must point to the same pinned commit.")
+
+    source_records = lock.get("source_records")
+    if not isinstance(source_records, dict):
+        _add(errors, "dashboard/terrain_source_lock.json.source_records", "Terrain lock needs Earth and Mars provenance records.")
+        source_records = {}
+    required_fields = tuple((policy or {}).get("required_provenance_fields", ()))
+    approved_urls = set()
+    if isinstance(official_catalog, dict) and isinstance(official_catalog.get("resources"), list):
+        approved_urls = official_resource_urls(official_catalog)
+    expected_layers = {
+        "earth_elevation": {
+            "resource_url": "https://search.earthdata.nasa.gov",
+            "exact_product_url": "https://doi.org/10.5067/MEASURES/NASADEM/NASADEM_HGT.001",
+            "version_or_product_id": "NASADEM_HGT.001",
+            "product_key": "earth_elevation_nasadem_hgt_v1",
+        },
+        "mars_elevation": {
+            "resource_url": "https://pds.nasa.gov",
+            "exact_product_url": "https://pds-geosciences.wustl.edu/mgs/mgs-m-mola-5-megdr-l3-v1/mgsl_300x/meg004/megt90n000cb.img",
+            "version_or_product_id": "MGS-M-MOLA-5-MEGDR-L3-V1",
+            "product_key": "mars_elevation_mola_megdr",
+        },
+    }
+    for layer, expected in expected_layers.items():
+        record = source_records.get(layer)
+        if not isinstance(record, dict):
+            _add(errors, f"dashboard/terrain_source_lock.json.source_records.{layer}", "Required terrain provenance record is missing.")
+            continue
+        absent = [field for field in required_fields if not record.get(field)]
+        if absent:
+            _add(errors, f"dashboard/terrain_source_lock.json.source_records.{layer}", f"Required provenance is incomplete: {', '.join(absent)}.")
+        if normalize_url(record.get("resource_url", "")) not in approved_urls:
+            _add(errors, f"dashboard/terrain_source_lock.json.source_records.{layer}.resource_url", "URL is not listed on the official Resources tab.")
+        for field in ("resource_url", "exact_product_url", "version_or_product_id"):
+            if record.get(field) != expected[field]:
+                _add(errors, f"dashboard/terrain_source_lock.json.source_records.{layer}.{field}", f"Expected the pinned official {field}.")
+        product = ((exact_products or {}).get("products", {}) if isinstance(exact_products, dict) else {}).get(expected["product_key"])
+        if not isinstance(product, dict):
+            _add(errors, f"data/official_product_urls.json.products.{expected['product_key']}", "Pinned exact product record is missing.")
+        else:
+            for field in ("exact_product_url", "version_or_product_id", "approved_portal_url"):
+                expected_value = expected["exact_product_url"] if field == "exact_product_url" else expected["version_or_product_id"] if field == "version_or_product_id" else expected["resource_url"]
+                if product.get(field) != expected_value:
+                    _add(errors, f"data/official_product_urls.json.products.{expected['product_key']}.{field}", "Exact product catalog does not match the terrain source lock.")
+        snapshot_url = record.get("source_snapshot_url", "")
+        if not isinstance(snapshot_url, str) or lock_dataset.get("commit", "") not in snapshot_url:
+            _add(errors, f"dashboard/terrain_source_lock.json.source_records.{layer}.source_snapshot_url", "Provenance must link to the pinned repository snapshot.")
+
+    method = lock.get("method") if isinstance(lock.get("method"), dict) else {}
+    if method.get("scored_features") != ["slope", "roughness", "relief"]:
+        _add(errors, "dashboard/terrain_source_lock.json.method.scored_features", "Terrain-only scoring must be limited to slope, roughness and relief.")
+    if method.get("coverage_score") != 100:
+        _add(errors, "dashboard/terrain_source_lock.json.method.coverage_score", "Terrain-only source coverage must be 100 for the three scored features.")
+    guardrail = method.get("guardrail", "")
+    if not isinstance(guardrail, str) or not all(term in guardrail.lower() for term in ("landing", "climate", "geology", "environmental")):
+        _add(errors, "dashboard/terrain_source_lock.json.method.guardrail", "Terrain lock must state the non-inference guardrails.")
+
+    return {
+        "status": status,
+        "ready": ready is True and status == "ready",
+        "records": len(source_records),
+        "earth_records": len(earth_rows),
+        "mars_records": len(mars_rows),
+    }
+
+
 def validate_repository_data(root: Path = ROOT) -> dict[str, Any]:
     """Return a deterministic structural audit for the dashboard's data graph."""
 
@@ -312,7 +438,10 @@ def validate_repository_data(root: Path = ROOT) -> dict[str, Any]:
     global_results = _read(root, "dashboard/global_results.json", errors)
     policy = _read(root, "data/terratwin_source_policy.json", errors)
     official_catalog = _read(root, "data/official_resources_catalog.json", errors)
+    exact_products = _read(root, "data/official_product_urls.json", errors)
+    cache_manifest = _read(root, "data/analogx/cache_manifest.json", errors)
     source_lock = _read(root, "dashboard/source_lock.json", errors)
+    terrain_source_lock = _read(root, "dashboard/terrain_source_lock.json", errors)
 
     counts: dict[str, int] = {}
     counts.update(_validate_analogx(analogx, errors))
@@ -334,6 +463,16 @@ def validate_repository_data(root: Path = ROOT) -> dict[str, Any]:
     if isinstance(source_lock, dict) and not isinstance(source_lock.get("ready"), bool):
         _add(errors, "dashboard/source_lock.json.ready", "Source lock must expose a boolean ready field.")
 
+    terrain_lock_status = _validate_terrain_source_lock(
+        terrain_source_lock,
+        analogx,
+        policy,
+        official_catalog,
+        exact_products,
+        cache_manifest,
+        errors,
+    )
+
     source_audit = None
     try:
         source_audit = audit_results()
@@ -352,7 +491,8 @@ def validate_repository_data(root: Path = ROOT) -> dict[str, Any]:
             "blocked_sources": len(source_audit.get("blocked_sources", [])) if isinstance(source_audit, dict) else None,
             "missing_provenance": len(source_audit.get("missing_provenance", [])) if isinstance(source_audit, dict) else None,
         },
-        "meaning": "Structural checks passed; source_lock.ready still controls whether numeric multi-modal results may be presented as official challenge evidence.",
+        "terrain_source_lock": terrain_lock_status,
+        "meaning": "Structural checks passed; terrain_source_lock.ready controls the imported terrain-only evidence path, while source_lock.ready separately controls multi-modal challenge evidence.",
     }
 
 

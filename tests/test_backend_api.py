@@ -16,6 +16,9 @@ class BackendDataApiTests(unittest.TestCase):
         self.assertEqual(payload["project"], "NAKSH")
         self.assertEqual(payload["data_audit"]["status"], "pass")
         self.assertFalse(payload["source_lock"]["ready"])
+        self.assertTrue(payload["terrain_source_lock"]["ready"])
+        self.assertEqual(payload["terrain_source_lock"]["earth_records"], 49)
+        self.assertEqual(payload["terrain_source_lock"]["mars_records"], 2)
         self.assertEqual(payload["imports"]["earth_feature_records"], 49)
 
     def test_candidate_lists_are_body_specific(self):
@@ -32,11 +35,14 @@ class BackendDataApiTests(unittest.TestCase):
         self.assertEqual(len(_planetary_targets(self.catalog, "Moon".lower())), 4)
         self.assertEqual(len(_planetary_targets(self.catalog, "Mars".lower())), 6)
 
-    def test_comparison_keeps_provisional_score_distinct(self):
+    def test_comparison_exposes_source_verified_terrain_score_without_global_score(self):
         payload = candidate_comparison("terrain-atacama-desert", target_id="mars-jezero")
         self.assertIsNone(payload["comparison"]["similarity_score"])
-        self.assertIsNotNone(payload["comparison"]["provisional_similarity_score"])
-        self.assertEqual(payload["comparison"]["status"], "provisional_source_lock_pending")
+        self.assertIsNotNone(payload["comparison"]["terrain_similarity_score"])
+        self.assertIsNone(payload["comparison"]["provisional_similarity_score"])
+        self.assertEqual(payload["comparison"]["status"], "source_verified_terrain_only")
+        self.assertIn("final challenge evidence", payload["comparison"]["guardrail"])
+        self.assertIn("climate", payload["comparison"]["guardrail"])
 
     def test_unknown_candidate_is_rejected(self):
         with self.assertRaises(Exception):
@@ -46,6 +52,7 @@ class BackendDataApiTests(unittest.TestCase):
         payload = methodology()
         self.assertTrue(payload["guardrails"])
         self.assertIn("official_resources_url", payload)
+        self.assertTrue(payload["terrain_source_lock"]["ready"])
 
 
 if __name__ == "__main__":

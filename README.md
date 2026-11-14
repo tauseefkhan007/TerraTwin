@@ -8,11 +8,11 @@
 
 TerraTwin is an interactive screening tool for comparing Earth field environments with selected lunar and Martian mission targets. It keeps similarity, evidence coverage, source provenance and irreducible Earth-versus-planet gaps visible in the same report.
 
-> **Source-policy lock:** final challenge claims must use only datasets and links listed on the official [NASA Space Apps 2026 Resources tab](https://www.spaceappschallenge.org/2026/challenges/permanent-moon-base-locations-and-mars/?tab=resources). The current dashboard contains an imported PTAE baseline for reuse-first development. Its inherited adapters and generated results are explicitly provisional until revalidated against that tab.
+> **Source-policy lock:** final challenge claims must use only datasets and links listed on the official [NASA Space Apps 2026 Resources tab](https://www.spaceappschallenge.org/2026/challenges/permanent-moon-base-locations-and-mars/?tab=resources). The imported terrain-only path is source-verified against pinned NASADEM/MOLA products; the inherited multi-modal ranking remains separately blocked.
 
 The current branch is the first TerraTwin build: an MIT-licensed scientific scoring base, Earth–Moon–Mars intro animation, four mission-profile presets, a separate coverage score, per-site guardrails, famous-analog benchmark checks and a deterministic grounded Science Copilot scaffold.
 
-The official source lock is enforced by [`src/source_lock.py`](src/source_lock.py), [`data/official_resources_catalog.json`](data/official_resources_catalog.json) and [`dashboard/source_lock.json`](dashboard/source_lock.json). The dashboard hides the inherited multi-modal ranking workspace while the audit is blocked. The original five-site synthetic demo remains available with an explicit demo label, and the 49-record imported terrain table remains available as provisional terrain-only evidence.
+The official source lock is enforced by [`src/source_lock.py`](src/source_lock.py), [`data/official_resources_catalog.json`](data/official_resources_catalog.json) and [`dashboard/source_lock.json`](dashboard/source_lock.json). The dashboard hides the inherited multi-modal ranking workspace while that audit is blocked. The narrower [`dashboard/terrain_source_lock.json`](dashboard/terrain_source_lock.json) verifies the 49 Earth and 2 Mars imported terrain records for slope, roughness and relief only. The original five-site synthetic demo remains available with an explicit demo label.
 
 The static data graph is checked by [`src/app_data_validation.py`](src/app_data_validation.py) and its generated [`dashboard/data_audit.json`](dashboard/data_audit.json). The optional FastAPI service exposes the same state at `/api/datasets`, `/api/methodology`, `/api/candidates` and the candidate comparison routes.
 
@@ -30,8 +30,8 @@ audit. The dashboard reports this inventory in Global Analog Search. The
 repository's duplicate 150-tile HGT/150-tile ZIP cache is represented by
 [`data/analogx/cache_manifest.json`](data/analogx/cache_manifest.json) and is
 downloaded only when reproducing the upstream ETL. This import remains
-development-only until the exact NASA product provenance passes the official
-Resources-tab audit.
+terrain-only evidence after the exact NASA product provenance passes the official
+Resources-tab audit. The Earth product is [NASADEM_HGT.001](https://doi.org/10.5067/MEASURES/NASADEM/NASADEM_HGT.001); the Mars product is the pinned [MOLA MEGDR image](https://pds-geosciences.wustl.edu/mgs/mgs-m-mola-5-megdr-l3-v1/mgsl_300x/meg004/megt90n000cb.img). This does not verify climate, geology, radiation, landing safety or environmental equivalence.
 
 ## Inherited scientific baseline
 
@@ -136,8 +136,9 @@ Tests (offline): `python -m unittest discover -s tests -v`. Browser tests also n
 ```text
 catalog/                 Earth sites and Moon/Mars targets (curated tags, heritage, limits)
 src/geodata.py           Data adapters retained for the provisional development baseline
-src/source_lock.py       Official Resources-tab catalog and provenance gate
+src/source_lock.py       Official Resources-tab catalog and multi-modal provenance gate
 src/app_data_validation.py  Static dashboard data graph validator and audit writer
+dashboard/terrain_source_lock.json  Source-verified terrain-only NASADEM/MOLA lock
 src/multiscale.py        Baseline slope signatures, sliding windows, water masking
 src/analog_score.py      Terrain/environment/geology similarity, aggregation, robustness, AUC
 src/global_search.py     End-to-end pipeline and CLI
@@ -152,7 +153,7 @@ main.py, src/terrain_metrics.py, similarity_matcher.py, synthetic_generator.py
 `python main.py --target moon --json-out` and `--target mars` still regenerate the calibrated synthetic-terrain demo used by the dashboard's "Explore Sites" and "Compare" tabs. Those scores are **not** measurements; use Global Search for real-data results.
 
 ## Inherited open-data references
-The approved resource list is recorded in [data/official_resources_catalog.json](data/official_resources_catalog.json). The inherited baseline references LRO LOLA, MGS MOLA, AWS Terrain Tiles and NASA POWER, but those inherited numeric results remain blocked until each exact product is re-ingested from a resource listed on the official page and receives complete provenance.
+The approved resource list is recorded in [data/official_resources_catalog.json](data/official_resources_catalog.json). The inherited baseline references LRO LOLA, MGS MOLA, AWS Terrain Tiles and NASA POWER, but those inherited multi-modal numeric results remain blocked until each exact product is re-ingested from a resource listed on the official page and receives complete provenance. The source-verified terrain-only import is intentionally narrower and does not unlock those claims.
 
 ## Use of Super Intelligence (SI) tools
 Per the Space Apps rules: the v1 prototype was drafted with an AI assistant, and the v2 redesign (data pipeline, scoring, dashboard tab, tests, documentation) was developed with GitHub Copilot. Design decisions, data choices and validity checks remain the team's responsibility.
