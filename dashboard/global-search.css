@@ -13,6 +13,7 @@
 #global-tab .gs-source-lock p { margin: 8px 0 0; font-size: .72rem; line-height: 1.5; }
 #global-tab .gs-source-lock-detail { color: #ffc7b8; }
 #global-tab .gs-source-lock.is-ready .gs-source-lock-detail { color: #afe6cb; }
+#global-tab .gs-analogx-inventory { padding: 9px 11px; border: 1px solid rgba(104, 215, 238, .24); border-radius: 8px; background: rgba(6, 29, 48, .55); color: #bceafa; }
 #global-tab .gs-source-lock-resources { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 4px 18px; margin: 11px 0; padding-left: 17px; font-size: .66rem; line-height: 1.45; }
 #global-tab .gs-source-lock-resources a { color: #bfeeff; }
 #global-tab .gs-verified-sample { margin-top: 14px; padding: 12px 13px; border: 1px solid rgba(104, 215, 238, .35); border-radius: 10px; background: rgba(6, 29, 48, .72); }

@@ -1,0 +1,11 @@
+name,country,lat,lon,elevation,slope,roughness,temperature,geology,description
+Atacama Desert,Chile,-23.86,-69.13,2400,7.1,0.78,0.31,0.83,Extremely arid high-altitude terrain
+Mauna Kea,Hawaii USA,19.82,-155.47,4205,8.3,0.72,0.42,0.89,High volcanic terrain
+Iceland Highlands,Iceland,64.75,-18.70,900,9.2,0.82,0.18,0.86,Cold volcanic highlands
+Utah Desert,USA,38.40,-113.20,1600,6.4,0.76,0.38,0.81,Arid rocky desert
+Antarctic Dry Valleys,Antarctica,-77.50,162.00,1200,5.8,0.84,0.08,0.79,Cold dry polar terrain
+Namib Desert,Namibia,-24.75,15.30,700,4.9,0.74,0.62,0.72,Hyper-arid desert
+Canary Volcanic Terrain,Spain,28.30,-17.80,1800,10.1,0.80,0.55,0.91,Volcanic terrain and steep slopes
+Australian Outback,Australia,-25.20,133.80,500,3.7,0.61,0.71,0.67,Large arid rocky region
+Ladakh,India,34.15,77.58,3500,9.0,0.79,0.27,0.78,High-altitude cold arid terrain
+Ethiopian Highlands,Ethiopia,9.15,39.50,2600,11.5,0.77,0.55,0.84,High volcanic plateau

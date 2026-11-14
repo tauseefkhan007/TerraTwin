@@ -17,3 +17,10 @@ When you run `python main.py`, realistic procedural simulations are generated he
 Final challenge evidence may be ingested only from a resource listed on the official [NASA Space Apps 2026 Resources tab](https://www.spaceappschallenge.org/2026/challenges/permanent-moon-base-locations-and-mars/?tab=resources). The exact approved portals are recorded in [`official_resources_catalog.json`](official_resources_catalog.json).
 
 Every downloaded product must carry all fields in `terratwin_source_policy.json`: dataset name, provider, exact resource URL, retrieval date, product/version ID, processing step, coverage/resolution and quality flags. Run `./.venv/bin/python -m src.source_lock --write-dashboard` before displaying or submitting derived scores. Unapproved fallbacks remain development fixtures and are blocked from the dashboard's ranking workspace.
+
+## AnalogX import
+
+`data/analogx/` contains the complete 49-row Earth terrain table, both Mars
+target rows and the upstream sensitivity audit from the public AnalogX
+repository. It is available for development comparison and is shown as an
+inventory in the dashboard, but it does not override the official source lock.

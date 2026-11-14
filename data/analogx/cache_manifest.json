@@ -1,0 +1,32 @@
+{
+  "schema_version": 1,
+  "source_repository": "https://github.com/hazraanirban2006-boop/analogx-hackathon-ready",
+  "source_commit": "76f3dbf1f418eb36cf244033468c8d2fcc249bfa",
+  "raw_cache": {
+    "nasa_dem_hgt_tiles": {
+      "file_count": 150,
+      "extensions": [".hgt"],
+      "source_directory": "backend/data/nasa/cache",
+      "source_pattern": "*.hgt",
+      "dataset": "NASADEM_HGT.001",
+      "provider": "NASA LP DAAC / Earthdata"
+    },
+    "nasa_dem_zip_caches": {
+      "file_count": 150,
+      "extensions": [".zip"],
+      "source_directory": "backend/data/nasa/cache",
+      "source_pattern": "NASADEM_HGT_*.zip",
+      "dataset": "NASADEM_HGT.001 download cache",
+      "provider": "NASA LP DAAC / Earthdata"
+    },
+    "mola_auxiliary_files": {
+      "file_count": 2,
+      "extensions": [".img", ".lbl"],
+      "source_directory": "backend/data/nasa/cache",
+      "dataset": "MGS MOLA MEGDR",
+      "provider": "NASA/JPL Planetary Data System"
+    }
+  },
+  "on_demand_source": "https://github.com/hazraanirban2006-boop/analogx-hackathon-ready/tree/76f3dbf1f418eb36cf244033468c8d2fcc249bfa/backend/data/nasa/cache",
+  "vendoring_policy": "Do not commit the duplicate raw cache into NAKSH; fetch it only when reproducing the AnalogX ETL."
+}

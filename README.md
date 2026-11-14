@@ -14,6 +14,18 @@ The current branch is the first TerraTwin build: an MIT-licensed scientific scor
 
 The official source lock is enforced by [`src/source_lock.py`](src/source_lock.py), [`data/official_resources_catalog.json`](data/official_resources_catalog.json) and [`dashboard/source_lock.json`](dashboard/source_lock.json). The dashboard hides numeric ranking results while the audit is blocked. This is intentional: the imported baseline must not be mistaken for official challenge evidence.
 
+## AnalogX dataset import
+
+NAKSH also loads the complete tabular terrain import from the public
+[`analogx-hackathon-ready`](https://github.com/hazraanirban2006-boop/analogx-hackathon-ready)
+repository: 49 Earth feature records, 2 Mars target records and its sensitivity
+audit. The dashboard reports this inventory in Global Analog Search. The
+repository's duplicate 150-tile HGT/150-tile ZIP cache is represented by
+[`data/analogx/cache_manifest.json`](data/analogx/cache_manifest.json) and is
+downloaded only when reproducing the upstream ETL. This import remains
+development-only until the exact NASA product provenance passes the official
+Resources-tab audit.
+
 ## Inherited scientific baseline
 
 The sections below document the imported PTAE v2 baseline for the team while the TerraTwin source-compliant adapters are being prepared. Treat its numeric results as development fixtures, not final challenge evidence.

@@ -41,7 +41,7 @@
     };
 
     const state = {
-        data: null, sourceLock: null, targetId: null, weights: { ...PRESETS.balanced }, aggregation: 'geometric',
+        data: null, analogx: null, sourceLock: null, targetId: null, weights: { ...PRESETS.balanced }, aggregation: 'geometric',
         category: 'all', selectedSite: null, map: null, markerLayer: null, windowLayer: null, chart: null,
     };
 
@@ -94,6 +94,13 @@
         $('gs-source-lock-detail').textContent = sourceLockReady()
             ? 'The ranking workspace is enabled because every displayed input is traceable to an approved resource URL.'
             : `${blocked} source checks blocked · ${missing} files missing provenance. No inherited score is presented as final challenge evidence.`;
+        const analogxInventory = $('gs-analogx-inventory');
+        if (analogxInventory) {
+            const counts = state.analogx?.counts;
+            analogxInventory.textContent = counts
+                ? `AnalogX repository import loaded: ${counts.earth_feature_records} Earth terrain records, ${counts.planetary_target_records} Mars targets, plus an inventory for ${counts.raw_hgt_tiles} HGT tiles and ${counts.raw_zip_caches} ZIP caches. The import remains development-only until its exact product provenance passes the official Resources-tab audit.`
+                : 'AnalogX repository import could not be loaded; no additional terrain records are available in this session.';
+        }
         const list = $('gs-approved-resources');
         list.replaceChildren(...(audit.approved_resources || []).map(resource => {
             const link = el('a', { href: resource.resource_url, target: '_blank', rel: 'noopener noreferrer', text: resource.name });
@@ -537,12 +544,14 @@
         const root = $('global-tab');
         if (!root) return;
         try {
-            const [resultsResponse, lockResponse] = await Promise.all([
+            const [resultsResponse, lockResponse, analogxResponse] = await Promise.all([
                 fetch('global_results.json', { cache: 'no-store' }),
                 fetch('source_lock.json', { cache: 'no-store' }),
+                fetch('analogx_dataset.json', { cache: 'no-store' }),
             ]);
             if (!resultsResponse.ok) throw new Error(`global_results.json HTTP ${resultsResponse.status}`);
             state.data = await resultsResponse.json();
+            state.analogx = analogxResponse.ok ? await analogxResponse.json() : null;
             state.sourceLock = lockResponse.ok ? await lockResponse.json() : {
                 ready: false,
                 status: 'blocked_missing_audit',
@@ -555,6 +564,7 @@
             return;
         }
         window.__terratwinSourceLock = state.sourceLock;
+        window.__nakshAnalogX = state.analogx;
         renderSourceLock();
         renderHome();
         if (!sourceLockReady()) return;
