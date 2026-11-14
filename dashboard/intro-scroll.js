@@ -21,6 +21,7 @@
 
     const CTA_AT = 0.86;      // scroll progress at which the call to action appears
     const EASE = 0.28;        // faster catch-up keeps the scroll response close to 60/65 Hz
+    const SCROLL_IDLE_DELAY = 90;
     const SEEK_THRESHOLD = 0.025;
     const FAST_SEEK_THRESHOLD = 0.75;
     const reducedMotion = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
@@ -33,6 +34,7 @@
     let ready = false;
     let failed = false;
     let primed = false;
+    let scrollIdleTimer = 0;
 
     function pickSource() {
         return 'assets/video/naksh-intro-scrub.mp4';
@@ -96,6 +98,19 @@
         video.playbackRate = 1;
     }
 
+    function freezeAfterScroll() {
+        if (scrollIdleTimer) window.clearTimeout(scrollIdleTimer);
+        scrollIdleTimer = window.setTimeout(function () {
+            scrollIdleTimer = 0;
+            if (raf) {
+                window.cancelAnimationFrame(raf);
+                raf = 0;
+            }
+            target = current;
+            paintUi();
+        }, SCROLL_IDLE_DELAY);
+    }
+
     function paintUi() {
         if (hint) hint.style.opacity = String(Math.max(0, 1 - target * 28));
         if (railFill) railFill.style.transform = 'scaleY(' + target.toFixed(4) + ')';
@@ -116,6 +131,7 @@
         target = scrollProgress();
         paintUi();
         if (!raf) raf = window.requestAnimationFrame(tick);
+        freezeAfterScroll();
     }
 
     // iOS/Safari only let a video seek reliably after a user gesture has "touched" it.
@@ -198,6 +214,10 @@
     new MutationObserver(function () {
         if (!landing.hidden) {
             pausePlayback();
+            if (scrollIdleTimer) {
+                window.clearTimeout(scrollIdleTimer);
+                scrollIdleTimer = 0;
+            }
             landing.scrollTop = 0;
             target = 0;
             current = 0;
