@@ -22,7 +22,7 @@
     const CTA_AT = 0.86;      // scroll progress at which the call to action appears
     const EASE = 0.28;        // faster catch-up keeps the scroll response close to 60/65 Hz
     const IDLE_DELAY = 520;   // wait briefly after scrolling stops before playing
-    const IDLE_RATE = 0.65;   // moderate slow motion without making the intro feel sluggish
+    const IDLE_RATE = 1;      // native speed keeps the source video smooth and natural
     const SEEK_THRESHOLD = 0.025;
     const FAST_SEEK_THRESHOLD = 0.75;
     const reducedMotion = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
