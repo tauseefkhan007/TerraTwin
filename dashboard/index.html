@@ -2379,6 +2379,22 @@
         @media (max-width: 600px) {
             .mission-tools .layer-control > span { font-size: 0.58rem; }
         }
+
+        /* Premium minimal top navigation: every workspace tab owns the same width. */
+        .workspace-sidebar { gap: 14px; padding: 8px clamp(18px, 3vw, 42px) !important; background: rgba(3, 12, 25, .92) !important; border-bottom-color: rgba(88, 174, 220, .28) !important; box-shadow: 0 10px 30px rgba(0, 0, 0, .16); }
+        .workspace-sidebar .nav-tabs { display: grid !important; grid-template-columns: repeat(5, minmax(0, 1fr)); gap: 5px; flex: 1 1 auto; overflow: visible; }
+        .workspace-sidebar .tab-btn { display: flex; flex: 1 1 0 !important; width: auto !important; min-width: 0 !important; min-height: 38px; align-items: center; justify-content: center; gap: 7px; padding: 8px 10px !important; border: 1px solid transparent !important; border-radius: 9px !important; color: #8fa8bb; font-size: .68rem; font-weight: 650; letter-spacing: .01em; transition: background 160ms ease, border-color 160ms ease, color 160ms ease, transform 160ms ease; }
+        .workspace-sidebar .tab-btn:hover { color: #e9f8ff; background: rgba(30, 86, 126, .24); border-color: rgba(91, 171, 211, .24) !important; transform: translateY(-1px); }
+        .workspace-sidebar .tab-btn.active, .workspace-sidebar .tab-btn[aria-selected="true"] { color: #edfbff; background: linear-gradient(180deg, rgba(33, 111, 151, .48), rgba(16, 64, 98, .42)); border-color: rgba(91, 210, 238, .52) !important; box-shadow: inset 0 1px 0 rgba(255, 255, 255, .08), 0 5px 16px rgba(15, 101, 143, .14); }
+        .workspace-sidebar .tab-btn.is-locked { opacity: .38; cursor: not-allowed; pointer-events: none; }
+        .workspace-sidebar .nav-icon { width: 15px; height: 15px; opacity: .82; }
+        .workspace-sidebar .sidebar-logout { margin-left: 2px; border-radius: 8px; }
+        @media (max-width: 760px) {
+            .workspace-sidebar { gap: 7px; padding: 5px 8px !important; }
+            .workspace-sidebar .nav-tabs { grid-template-columns: repeat(5, minmax(112px, 1fr)); overflow-x: auto; scrollbar-width: none; }
+            .workspace-sidebar .nav-tabs::-webkit-scrollbar { display: none; }
+            .workspace-sidebar .tab-btn { min-width: 112px !important; font-size: .62rem; }
+        }
     </style>
 </head>
 <body>
@@ -6332,7 +6348,7 @@
                 });
                 ['tab-map', 'tab-terrain3d', 'tab-data'].forEach(id => {
                     const node = document.getElementById(id);
-                    if (node) { node.hidden = true; node.setAttribute('aria-disabled', 'true'); }
+                    if (node) { node.classList.add('is-locked'); node.setAttribute('aria-disabled', 'true'); node.tabIndex = -1; }
                 });
                 ['site-score-box', 'site-metrics', 'validation-content'].forEach(id => {
                     const node = document.getElementById(id);
@@ -6350,7 +6366,7 @@
                 });
                 ['tab-map', 'tab-terrain3d', 'tab-data'].forEach(id => {
                     const node = document.getElementById(id);
-                    if (node) node.hidden = true;
+                    if (node) { node.classList.add('is-locked'); node.setAttribute('aria-disabled', 'true'); node.tabIndex = -1; }
                 });
                 return false;
             }
