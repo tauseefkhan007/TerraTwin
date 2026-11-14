@@ -3313,7 +3313,7 @@
 
         initializePlanetSelectorImages();
 
-        const analogSites = [
+        let analogSites = [
             {
                 id: 'iceland',
                 pipelineId: 'earth_iceland_askja',
@@ -3409,6 +3409,7 @@
         let currentTarget = 'moon';
         let currentView = 'moon';
         let selectedSite = analogSites[0];
+        let importedTerrainSites = [];
         let targetSiteCatalog = null;
         let targetSiteCatalogLoadError = false;
         let selectedTargetSiteId = null;
@@ -6541,6 +6542,30 @@
                 if (!datasetResponse.ok || !rankingResponse.ok) return false;
                 const dataset = await datasetResponse.json();
                 const rankings = await rankingResponse.json();
+                importedTerrainSites = (dataset.earth_features || []).map(row => {
+                    const slug = String(row.name).toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '');
+                    const siteId = `terrain-${slug}`;
+                    return {
+                        id: siteId,
+                        pipelineId: siteId,
+                        name: row.name,
+                        country: row.country,
+                        lat: Number(row.lat),
+                        lon: Number(row.lon),
+                        type: 'Imported terrain record',
+                        isBasaltic: false,
+                        hasTubes: false,
+                        isArid: false,
+                        images: [],
+                        desc: `${row.description || 'Imported terrain feature record.'} Slope ${Number(row.slope).toFixed(2)}°, roughness ${Number(row.roughness).toFixed(2)}, relief ${Number(row.relief).toFixed(2)} m.`,
+                        terrainRecord: row,
+                    };
+                });
+                analogSites = analogSites.filter(site => !site.id.startsWith('terrain-')).concat(importedTerrainSites);
+                if (importedTerrainSites.length) {
+                    selectedSite = importedTerrainSites[0];
+                    currentView = 'earth';
+                }
                 const targets = rankings.targets || [];
                 const jezero = rankings.rankings?.['mars-jezero'] || [];
                 const olympus = rankings.rankings?.['mars-olympus'] || [];
@@ -6657,7 +6682,16 @@
             initializeStartHereHint();
             organizeDashboardSections();
             observeDashboardSections();
-            if (!officialSourceLockPassed) return;
+            if (!officialSourceLockPassed) {
+                initializeDashboardControls();
+                initializeSitePhotoLightbox();
+                initializeMapResizeObserver();
+                loadTargetSiteCatalog();
+                initMap();
+                init3D();
+                selectSite(selectedSite, false);
+                return;
+            }
             initializeDashboardControls();
             initializeSitePhotoLightbox();
             initializeMapResizeObserver();
