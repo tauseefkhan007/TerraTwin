@@ -145,6 +145,9 @@
         const earth = (dataset.earth_features || []).map(row => ({ ...row, body: 'Earth' }));
         const mars = (dataset.planetary_targets || []).map(row => ({ ...row, body: 'Mars' }));
         const all = [...earth, ...mars];
+        const demoCount = dataset.demo_earth_candidates?.length || dataset.counts?.demo_candidate_records || 0;
+        const auditText = $('gs-dataset-audit-text');
+        if (auditText) auditText.textContent = dataset.sensitivity_audit || 'No sensitivity audit was included in this import.';
         const targetSelect = $('gs-terrain-target');
         const terrainTargets = state.terrain?.targets || [];
         if (targetSelect && terrainTargets.length) {
@@ -165,7 +168,7 @@
             if (left.body !== right.body) return left.body === 'Earth' ? -1 : 1;
             return (right.ranking?.score || -1) - (left.ranking?.score || -1);
         });
-        summary.textContent = `${all.length} records loaded: ${earth.length} Earth terrain records and ${mars.length} Mars targets. Terrain score compares slope, roughness and relief against ${target?.name || 'the selected target'}; coverage 100%.`;
+        summary.textContent = `${all.length} primary records loaded: ${earth.length} Earth terrain records and ${mars.length} Mars targets, plus ${demoCount} demo candidates and a sensitivity audit. Terrain score compares slope, roughness and relief against ${target?.name || 'the selected target'}; coverage 100%.`;
         const number = value => Number.isFinite(Number(value)) ? Number(value).toFixed(2) : '—';
         body.replaceChildren(...rows.map(row => el('tr', {}, [
             el('td', { class: 'gs-num', text: row.ranking?.rank ? String(row.ranking.rank) : '—' }),

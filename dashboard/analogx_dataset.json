@@ -13,6 +13,8 @@
   "counts": {
     "earth_feature_records": 49,
     "planetary_target_records": 2,
+    "demo_candidate_records": 10,
+    "sensitivity_audit_characters": 7924,
     "raw_hgt_tiles": 150,
     "raw_zip_caches": 150
   },
@@ -631,5 +633,128 @@
       "relief": 2431.798828125,
       "data_source": "NASA/JPL MGS MOLA MEGDR"
     }
-  ]
+  ],
+  "demo_earth_candidates": [
+    {
+      "name": "Atacama Desert",
+      "country": "Chile",
+      "lat": -23.86,
+      "lon": -69.13,
+      "elevation": 2400.0,
+      "slope": 7.1,
+      "roughness": 0.78,
+      "temperature": 0.31,
+      "geology": 0.83,
+      "description": "Extremely arid high-altitude terrain"
+    },
+    {
+      "name": "Mauna Kea",
+      "country": "Hawaii USA",
+      "lat": 19.82,
+      "lon": -155.47,
+      "elevation": 4205.0,
+      "slope": 8.3,
+      "roughness": 0.72,
+      "temperature": 0.42,
+      "geology": 0.89,
+      "description": "High volcanic terrain"
+    },
+    {
+      "name": "Iceland Highlands",
+      "country": "Iceland",
+      "lat": 64.75,
+      "lon": -18.7,
+      "elevation": 900.0,
+      "slope": 9.2,
+      "roughness": 0.82,
+      "temperature": 0.18,
+      "geology": 0.86,
+      "description": "Cold volcanic highlands"
+    },
+    {
+      "name": "Utah Desert",
+      "country": "USA",
+      "lat": 38.4,
+      "lon": -113.2,
+      "elevation": 1600.0,
+      "slope": 6.4,
+      "roughness": 0.76,
+      "temperature": 0.38,
+      "geology": 0.81,
+      "description": "Arid rocky desert"
+    },
+    {
+      "name": "Antarctic Dry Valleys",
+      "country": "Antarctica",
+      "lat": -77.5,
+      "lon": 162.0,
+      "elevation": 1200.0,
+      "slope": 5.8,
+      "roughness": 0.84,
+      "temperature": 0.08,
+      "geology": 0.79,
+      "description": "Cold dry polar terrain"
+    },
+    {
+      "name": "Namib Desert",
+      "country": "Namibia",
+      "lat": -24.75,
+      "lon": 15.3,
+      "elevation": 700.0,
+      "slope": 4.9,
+      "roughness": 0.74,
+      "temperature": 0.62,
+      "geology": 0.72,
+      "description": "Hyper-arid desert"
+    },
+    {
+      "name": "Canary Volcanic Terrain",
+      "country": "Spain",
+      "lat": 28.3,
+      "lon": -17.8,
+      "elevation": 1800.0,
+      "slope": 10.1,
+      "roughness": 0.8,
+      "temperature": 0.55,
+      "geology": 0.91,
+      "description": "Volcanic terrain and steep slopes"
+    },
+    {
+      "name": "Australian Outback",
+      "country": "Australia",
+      "lat": -25.2,
+      "lon": 133.8,
+      "elevation": 500.0,
+      "slope": 3.7,
+      "roughness": 0.61,
+      "temperature": 0.71,
+      "geology": 0.67,
+      "description": "Large arid rocky region"
+    },
+    {
+      "name": "Ladakh",
+      "country": "India",
+      "lat": 34.15,
+      "lon": 77.58,
+      "elevation": 3500.0,
+      "slope": 9.0,
+      "roughness": 0.79,
+      "temperature": 0.27,
+      "geology": 0.78,
+      "description": "High-altitude cold arid terrain"
+    },
+    {
+      "name": "Ethiopian Highlands",
+      "country": "Ethiopia",
+      "lat": 9.15,
+      "lon": 39.5,
+      "elevation": 2600.0,
+      "slope": 11.5,
+      "roughness": 0.77,
+      "temperature": 0.55,
+      "geology": 0.84,
+      "description": "High volcanic plateau"
+    }
+  ],
+  "sensitivity_audit": "=================================================================\r\nANALOGX - KNN SENSITIVITY AUDIT\r\n=================================================================\r\n\r\n#################################################################\r\nTARGET: Jezero Crater\r\n#################################################################\r\n\r\nBASELINE - ROVER\r\n1. Mount St Helens (88.14)\r\n2. Hoggar Mountains (86.85)\r\n3. Great Sand Dunes (85.85)\r\n4. Cotopaxi Volcano (78.85)\r\n5. Quelccaya Ice Cap (78.69)\r\n\r\nBASELINE - EVA\r\n1. Mount St Helens (88.35)\r\n2. Hoggar Mountains (86.31)\r\n3. Great Sand Dunes (85.83)\r\n4. Cotopaxi Volcano (79.71)\r\n5. Quelccaya Ice Cap (78.56)\r\n\r\nBASELINE - GEOLOGY\r\n1. Hoggar Mountains (89.68)\r\n2. Mount St Helens (86.43)\r\n3. Great Sand Dunes (84.01)\r\n4. Quelccaya Ice Cap (77.46)\r\n5. Cotopaxi Volcano (76.58)\r\n\r\nBASELINE - HABITAT\r\n1. Mount St Helens (87.17)\r\n2. Hoggar Mountains (87.01)\r\n3. Great Sand Dunes (83.92)\r\n4. Cotopaxi Volcano (79.72)\r\n5. Quelccaya Ice Cap (77.02)\r\n\r\n--- WEIGHT SENSITIVITY ---\r\n\r\nMission: ROVER\r\nBaseline top 5: ['Mount St Helens', 'Hoggar Mountains', 'Great Sand Dunes', 'Cotopaxi Volcano', 'Quelccaya Ice Cap']\r\nExact top-5 stability: 134/200 (67.0%)\r\nAverage top-5 overlap: 5.00/5 (100.0%)\r\nTop-1 retention: 200/200 (100.0%)\r\n\r\nMission: EVA\r\nBaseline top 5: ['Mount St Helens', 'Hoggar Mountains', 'Great Sand Dunes', 'Cotopaxi Volcano', 'Quelccaya Ice Cap']\r\nExact top-5 stability: 176/200 (88.0%)\r\nAverage top-5 overlap: 5.00/5 (100.0%)\r\nTop-1 retention: 200/200 (100.0%)\r\n\r\nMission: GEOLOGY\r\nBaseline top 5: ['Hoggar Mountains', 'Mount St Helens', 'Great Sand Dunes', 'Quelccaya Ice Cap', 'Cotopaxi Volcano']\r\nExact top-5 stability: 187/200 (93.5%)\r\nAverage top-5 overlap: 4.93/5 (98.7%)\r\nTop-1 retention: 200/200 (100.0%)\r\n\r\nMission: HABITAT\r\nBaseline top 5: ['Mount St Helens', 'Hoggar Mountains', 'Great Sand Dunes', 'Cotopaxi Volcano', 'Quelccaya Ice Cap']\r\nExact top-5 stability: 117/200 (58.5%)\r\nAverage top-5 overlap: 4.71/5 (94.3%)\r\nTop-1 retention: 139/200 (69.5%)\r\n\r\n--- DATASET SENSITIVITY ---\r\n\r\nMission: ROVER\r\nTop-1 retention (winner available): 48/48 (100.0%)\r\nNormalized top-5 overlap: 100.0%\r\n\r\nMission: EVA\r\nTop-1 retention (winner available): 48/48 (100.0%)\r\nNormalized top-5 overlap: 100.0%\r\n\r\nMission: GEOLOGY\r\nTop-1 retention (winner available): 48/48 (100.0%)\r\nNormalized top-5 overlap: 100.0%\r\n\r\nMission: HABITAT\r\nTop-1 retention (winner available): 42/48 (87.5%)\r\nNormalized top-5 overlap: 100.0%\r\n\r\n--- FIXED VS RECALCULATED SCALER ---\r\n\r\nMission: ROVER\r\nRecalculated scaler overlap: 100.0%\r\nFixed scaler overlap: 100.0%\r\nRecalculated scaler exact top-5: 48/49\r\nFixed scaler exact top-5: 49/49\r\nRecalculated scaler top-1 retention: 48/48\r\nFixed scaler top-1 retention: 48/48\r\n\r\nMission: EVA\r\nRecalculated scaler overlap: 100.0%\r\nFixed scaler overlap: 100.0%\r\nRecalculated scaler exact top-5: 47/49\r\nFixed scaler exact top-5: 49/49\r\nRecalculated scaler top-1 retention: 48/48\r\nFixed scaler top-1 retention: 48/48\r\n\r\nMission: GEOLOGY\r\nRecalculated scaler overlap: 100.0%\r\nFixed scaler overlap: 100.0%\r\nRecalculated scaler exact top-5: 49/49\r\nFixed scaler exact top-5: 49/49\r\nRecalculated scaler top-1 retention: 48/48\r\nFixed scaler top-1 retention: 48/48\r\n\r\nMission: HABITAT\r\nRecalculated scaler overlap: 100.0%\r\nFixed scaler overlap: 100.0%\r\nRecalculated scaler exact top-5: 43/49\r\nFixed scaler exact top-5: 49/49\r\nRecalculated scaler top-1 retention: 42/48\r\nFixed scaler top-1 retention: 48/48\r\n\r\n--- FEATURE SENSITIVITY ---\r\n\r\nMission: ROVER\r\nExact top-5 stability: 21/200 (10.5%)\r\nAverage top-5 overlap: 4.58/5 (91.7%)\r\nTop-1 retention: 105/200 (52.5%)\r\n\r\nMission: EVA\r\nExact top-5 stability: 24/200 (12.0%)\r\nAverage top-5 overlap: 4.55/5 (91.1%)\r\nTop-1 retention: 125/200 (62.5%)\r\n\r\nMission: GEOLOGY\r\nExact top-5 stability: 13/200 (6.5%)\r\nAverage top-5 overlap: 4.04/5 (80.9%)\r\nTop-1 retention: 161/200 (80.5%)\r\n\r\nMission: HABITAT\r\nExact top-5 stability: 12/200 (6.0%)\r\nAverage top-5 overlap: 4.29/5 (85.8%)\r\nTop-1 retention: 93/200 (46.5%)\r\n\r\n#################################################################\r\nTARGET: Olympus Mons flank\r\n#################################################################\r\n\r\nBASELINE - ROVER\r\n1. Mauna Kea (55.84)\r\n2. Rwenzori Mountains (52.20)\r\n3. Ladakh (41.72)\r\n4. Sierra Nevada (40.27)\r\n5. Canary Volcanic Terrain (37.57)\r\n\r\nBASELINE - EVA\r\n1. Mauna Kea (55.20)\r\n2. Rwenzori Mountains (51.94)\r\n3. Ladakh (42.64)\r\n4. Sierra Nevada (40.00)\r\n5. Canary Volcanic Terrain (38.42)\r\n\r\nBASELINE - GEOLOGY\r\n1. Mauna Kea (59.67)\r\n2. Rwenzori Mountains (52.68)\r\n3. Sierra Nevada (41.80)\r\n4. Ladakh (39.19)\r\n5. Ol Doinyo Lengai (37.39)\r\n\r\nBASELINE - HABITAT\r\n1. Mauna Kea (56.56)\r\n2. Rwenzori Mountains (51.62)\r\n3. Ladakh (42.45)\r\n4. Sierra Nevada (40.60)\r\n5. Mount Bromo (37.13)\r\n\r\n--- WEIGHT SENSITIVITY ---\r\n\r\nMission: ROVER\r\nBaseline top 5: ['Mauna Kea', 'Rwenzori Mountains', 'Ladakh', 'Sierra Nevada', 'Canary Volcanic Terrain']\r\nExact top-5 stability: 200/200 (100.0%)\r\nAverage top-5 overlap: 5.00/5 (100.0%)\r\nTop-1 retention: 200/200 (100.0%)\r\n\r\nMission: EVA\r\nBaseline top 5: ['Mauna Kea', 'Rwenzori Mountains', 'Ladakh', 'Sierra Nevada', 'Canary Volcanic Terrain']\r\nExact top-5 stability: 200/200 (100.0%)\r\nAverage top-5 overlap: 5.00/5 (100.0%)\r\nTop-1 retention: 200/200 (100.0%)\r\n\r\nMission: GEOLOGY\r\nBaseline top 5: ['Mauna Kea', 'Rwenzori Mountains', 'Sierra Nevada', 'Ladakh', 'Ol Doinyo Lengai']\r\nExact top-5 stability: 200/200 (100.0%)\r\nAverage top-5 overlap: 5.00/5 (100.0%)\r\nTop-1 retention: 200/200 (100.0%)\r\n\r\nMission: HABITAT\r\nBaseline top 5: ['Mauna Kea', 'Rwenzori Mountains', 'Ladakh', 'Sierra Nevada', 'Mount Bromo']\r\nExact top-5 stability: 113/200 (56.5%)\r\nAverage top-5 overlap: 4.57/5 (91.3%)\r\nTop-1 retention: 200/200 (100.0%)\r\n\r\n--- DATASET SENSITIVITY ---\r\n\r\nMission: ROVER\r\nTop-1 retention (winner available): 48/48 (100.0%)\r\nNormalized top-5 overlap: 100.0%\r\n\r\nMission: EVA\r\nTop-1 retention (winner available): 48/48 (100.0%)\r\nNormalized top-5 overlap: 100.0%\r\n\r\nMission: GEOLOGY\r\nTop-1 retention (winner available): 48/48 (100.0%)\r\nNormalized top-5 overlap: 100.0%\r\n\r\nMission: HABITAT\r\nTop-1 retention (winner available): 48/48 (100.0%)\r\nNormalized top-5 overlap: 98.8%\r\n\r\n--- FIXED VS RECALCULATED SCALER ---\r\n\r\nMission: ROVER\r\nRecalculated scaler overlap: 100.0%\r\nFixed scaler overlap: 100.0%\r\nRecalculated scaler exact top-5: 49/49\r\nFixed scaler exact top-5: 49/49\r\nRecalculated scaler top-1 retention: 48/48\r\nFixed scaler top-1 retention: 48/48\r\n\r\nMission: EVA\r\nRecalculated scaler overlap: 100.0%\r\nFixed scaler overlap: 100.0%\r\nRecalculated scaler exact top-5: 48/49\r\nFixed scaler exact top-5: 49/49\r\nRecalculated scaler top-1 retention: 48/48\r\nFixed scaler top-1 retention: 48/48\r\n\r\nMission: GEOLOGY\r\nRecalculated scaler overlap: 100.0%\r\nFixed scaler overlap: 100.0%\r\nRecalculated scaler exact top-5: 49/49\r\nFixed scaler exact top-5: 49/49\r\nRecalculated scaler top-1 retention: 48/48\r\nFixed scaler top-1 retention: 48/48\r\n\r\nMission: HABITAT\r\nRecalculated scaler overlap: 97.6%\r\nFixed scaler overlap: 100.0%\r\nRecalculated scaler exact top-5: 41/49\r\nFixed scaler exact top-5: 49/49\r\nRecalculated scaler top-1 retention: 48/48\r\nFixed scaler top-1 retention: 48/48\r\n\r\n--- FEATURE SENSITIVITY ---\r\n\r\nMission: ROVER\r\nExact top-5 stability: 129/200 (64.5%)\r\nAverage top-5 overlap: 4.65/5 (93.0%)\r\nTop-1 retention: 200/200 (100.0%)\r\n\r\nMission: EVA\r\nExact top-5 stability: 169/200 (84.5%)\r\nAverage top-5 overlap: 4.86/5 (97.1%)\r\nTop-1 retention: 198/200 (99.0%)\r\n\r\nMission: GEOLOGY\r\nExact top-5 stability: 198/200 (99.0%)\r\nAverage top-5 overlap: 4.99/5 (99.8%)\r\nTop-1 retention: 200/200 (100.0%)\r\n\r\nMission: HABITAT\r\nExact top-5 stability: 83/200 (41.5%)\r\nAverage top-5 overlap: 4.42/5 (88.5%)\r\nTop-1 retention: 200/200 (100.0%)\r\n\r\n=================================================================\r\nSENSITIVITY AUDIT COMPLETED\r\n=================================================================\r\n"
 }

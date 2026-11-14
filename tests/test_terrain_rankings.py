@@ -17,7 +17,9 @@ class TerrainRankingTests(unittest.TestCase):
 
     def test_complete_rankings_cover_every_imported_earth_record(self):
         payload = build_payload()
-        self.assertEqual(payload["counts"], {"earth_records": 49, "mars_targets": 2})
+        self.assertEqual(payload["counts"]["earth_records"], 49)
+        self.assertEqual(payload["counts"]["mars_targets"], 2)
+        self.assertEqual(payload["counts"]["demo_candidates"], 10)
         for target in payload["targets"]:
             rows = payload["rankings"][target["id"]]
             self.assertEqual(len(rows), 49)
@@ -27,7 +29,9 @@ class TerrainRankingTests(unittest.TestCase):
 
     def test_dashboard_artifact_is_regenerated(self):
         payload = json.loads((ROOT / "dashboard" / "terrain_rankings.json").read_text(encoding="utf-8"))
-        self.assertEqual(payload["counts"], {"earth_records": 49, "mars_targets": 2})
+        self.assertEqual(payload["counts"]["earth_records"], 49)
+        self.assertEqual(payload["counts"]["mars_targets"], 2)
+        self.assertEqual(payload["counts"]["demo_candidates"], 10)
 
 
 if __name__ == "__main__":

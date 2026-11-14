@@ -12,7 +12,15 @@ import math
 from pathlib import Path
 from typing import Any
 
-from .analogx_dataset import SOURCE_COMMIT, SOURCE_REPOSITORY, load_earth_features, load_planetary_targets, validate_dataset
+from .analogx_dataset import (
+    SOURCE_COMMIT,
+    SOURCE_REPOSITORY,
+    load_demo_candidates,
+    load_earth_features,
+    load_planetary_targets,
+    load_sensitivity_audit,
+    validate_dataset,
+)
 
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -38,7 +46,8 @@ def terrain_similarity(earth: dict[str, Any], target: dict[str, Any]) -> tuple[f
 def build_payload() -> dict[str, Any]:
     earth = load_earth_features()
     targets = load_planetary_targets()
-    validate_dataset(earth, targets)
+    demo = load_demo_candidates()
+    validate_dataset(earth, targets, demo)
     rankings: dict[str, list[dict[str, Any]]] = {}
     for target in targets:
         rows = []
@@ -74,7 +83,12 @@ def build_payload() -> dict[str, Any]:
             "coverage_score": 100,
             "guardrail": "Terrain similarity is not a landing-site safety assessment or a claim of environmental equivalence.",
         },
-        "counts": {"earth_records": len(earth), "mars_targets": len(targets)},
+        "counts": {
+            "earth_records": len(earth),
+            "mars_targets": len(targets),
+            "demo_candidates": len(demo),
+            "sensitivity_audit_characters": len(load_sensitivity_audit()),
+        },
         "targets": targets,
         "rankings": rankings,
     }

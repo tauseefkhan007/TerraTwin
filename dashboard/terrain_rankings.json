@@ -23,7 +23,9 @@
   },
   "counts": {
     "earth_records": 49,
-    "mars_targets": 2
+    "mars_targets": 2,
+    "demo_candidates": 10,
+    "sensitivity_audit_characters": 7924
   },
   "targets": [
     {

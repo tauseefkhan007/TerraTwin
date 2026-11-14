@@ -23,6 +23,7 @@ SOURCE_COMMIT = "76f3dbf1f418eb36cf244033468c8d2fcc249bfa"
 
 EARTH_NUMERIC_FIELDS = ("lat", "lon", "elevation", "slope", "roughness", "relief")
 TARGET_NUMERIC_FIELDS = EARTH_NUMERIC_FIELDS
+DEMO_NUMERIC_FIELDS = ("lat", "lon", "elevation", "slope", "roughness", "temperature", "geology")
 
 
 def _read_csv(path: Path, numeric_fields: tuple[str, ...]) -> list[dict[str, Any]]:
@@ -43,17 +44,39 @@ def load_planetary_targets() -> list[dict[str, Any]]:
     return _read_csv(DATA_DIR / "planetary_targets.csv", TARGET_NUMERIC_FIELDS)
 
 
-def validate_dataset(earth: list[dict[str, Any]], targets: list[dict[str, Any]]) -> None:
+def load_demo_candidates() -> list[dict[str, Any]]:
+    return _read_csv(DATA_DIR / "demo_earth_candidates.csv", DEMO_NUMERIC_FIELDS)
+
+
+def load_sensitivity_audit() -> str:
+    path = DATA_DIR / "sensitivity_results.txt"
+    raw = path.read_bytes()
+    for encoding in ("utf-16", "utf-8"):
+        try:
+            return raw.decode(encoding)
+        except UnicodeDecodeError:
+            continue
+    raise ValueError(f"Could not decode {path.name}")
+
+
+def validate_dataset(
+    earth: list[dict[str, Any]],
+    targets: list[dict[str, Any]],
+    demo: list[dict[str, Any]] | None = None,
+) -> None:
     if len(earth) != 49:
         raise ValueError(f"Expected 49 Earth feature records, found {len(earth)}")
     if len(targets) != 2:
         raise ValueError(f"Expected 2 planetary target records, found {len(targets)}")
+    if demo is not None and len(demo) != 10:
+        raise ValueError(f"Expected 10 demo Earth candidate records, found {len(demo)}")
     names = [str(row["name"]) for row in earth]
     if len(names) != len(set(names)):
         raise ValueError("Earth feature records contain duplicate names")
     for group_name, records, fields in (
         ("Earth", earth, EARTH_NUMERIC_FIELDS),
         ("target", targets, TARGET_NUMERIC_FIELDS),
+        ("demo", demo or [], DEMO_NUMERIC_FIELDS),
     ):
         for row in records:
             for field in fields:
@@ -64,7 +87,9 @@ def validate_dataset(earth: list[dict[str, Any]], targets: list[dict[str, Any]])
 def dashboard_payload() -> dict[str, Any]:
     earth = load_earth_features()
     targets = load_planetary_targets()
-    validate_dataset(earth, targets)
+    demo = load_demo_candidates()
+    sensitivity_audit = load_sensitivity_audit()
+    validate_dataset(earth, targets, demo)
     return {
         "schema_version": 1,
         "dataset_id": "analogx-nasa-terrain-v1",
@@ -80,11 +105,15 @@ def dashboard_payload() -> dict[str, Any]:
         "counts": {
             "earth_feature_records": len(earth),
             "planetary_target_records": len(targets),
+            "demo_candidate_records": len(demo),
+            "sensitivity_audit_characters": len(sensitivity_audit),
             "raw_hgt_tiles": 150,
             "raw_zip_caches": 150,
         },
         "earth_features": earth,
         "planetary_targets": targets,
+        "demo_earth_candidates": demo,
+        "sensitivity_audit": sensitivity_audit,
     }
 
 

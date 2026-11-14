@@ -17,6 +17,9 @@
 #global-tab .gs-analogx-card { margin-top: 18px; }
 #global-tab .gs-analogx-card .card-header { align-items: center; }
 #global-tab .gs-analogx-summary, #global-tab .gs-analogx-footnote { display: block; color: #a8c7d7; font-size: .74rem; line-height: 1.5; }
+#global-tab .gs-dataset-audit { margin: 10px 0; color: #bceafa; font-size: .7rem; }
+#global-tab .gs-dataset-audit summary { cursor: pointer; color: #bfeeff; }
+#global-tab .gs-dataset-audit pre { max-height: 220px; overflow: auto; margin: 8px 0 0; padding: 10px; border: 1px solid rgba(104, 215, 238, .18); border-radius: 8px; background: rgba(5, 20, 34, .7); color: #a8c7d7; white-space: pre-wrap; font: .66rem/1.45 ui-monospace, SFMono-Regular, Menlo, monospace; }
 #global-tab .gs-analogx-controls { display: flex; gap: 12px; align-items: end; flex-wrap: wrap; margin: 12px 0; }
 #global-tab .gs-analogx-controls label { display: grid; gap: 5px; color: #91afc0; font-size: .66rem; text-transform: uppercase; letter-spacing: .08em; }
 #global-tab .gs-analogx-controls input, #global-tab .gs-analogx-controls select { min-width: 180px; padding: 8px 10px; border: 1px solid rgba(129, 204, 226, .25); border-radius: 7px; background: rgba(5, 20, 34, .85); color: #eaf7ff; font: inherit; font-size: .75rem; text-transform: none; letter-spacing: 0; }
