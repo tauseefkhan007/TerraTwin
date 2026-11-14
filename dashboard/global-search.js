@@ -78,7 +78,7 @@
             ready: false,
             status: 'blocked_missing_audit',
             message: 'The source-lock audit could not be loaded, so numeric results remain hidden.',
-            approved_resources: [], blocked_sources: [], missing_provenance: [],
+            approved_resources: [], exact_products: {}, blocked_sources: [], missing_provenance: [],
         };
         const root = $('gs-source-lock');
         if (!root) return;
@@ -106,6 +106,13 @@
             const link = el('a', { href: resource.resource_url, target: '_blank', rel: 'noopener noreferrer', text: resource.name });
             return el('li', {}, [link, document.createTextNode(' '), el('small', { text: `· ${resource.scope}` })]);
         }));
+        const exactProducts = $('gs-exact-products');
+        if (exactProducts) {
+            exactProducts.replaceChildren(...Object.values(audit.exact_products || {}).map(product => {
+                const link = el('a', { href: product.exact_product_url, target: '_blank', rel: 'noopener noreferrer', text: product.dataset_name });
+                return el('li', {}, [link, document.createTextNode(' '), el('small', { text: `· ${product.version_or_product_id}` })]);
+            }));
+        }
         const workspace = $('gs-ranking-workspace');
         if (workspace) workspace.hidden = !sourceLockReady();
         const sample = $('gs-verified-sample');

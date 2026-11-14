@@ -14,6 +14,11 @@ The current branch is the first TerraTwin build: an MIT-licensed scientific scor
 
 The official source lock is enforced by [`src/source_lock.py`](src/source_lock.py), [`data/official_resources_catalog.json`](data/official_resources_catalog.json) and [`dashboard/source_lock.json`](dashboard/source_lock.json). The dashboard hides numeric ranking results while the audit is blocked. This is intentional: the imported baseline must not be mistaken for official challenge evidence.
 
+Exact product endpoints selected for the re-ingestion are recorded in
+[`data/official_product_urls.json`](data/official_product_urls.json). Recording
+an endpoint does not certify the inherited result snapshot; the data must still
+be downloaded, processed and audited against that endpoint.
+
 ## AnalogX dataset import
 
 NAKSH also loads the complete tabular terrain import from the public

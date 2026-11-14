@@ -25,6 +25,7 @@ from urllib.parse import urlsplit, urlunsplit
 ROOT = Path(__file__).resolve().parents[1]
 POLICY_PATH = ROOT / "data" / "terratwin_source_policy.json"
 CATALOG_PATH = ROOT / "data" / "official_resources_catalog.json"
+EXACT_PRODUCTS_PATH = ROOT / "data" / "official_product_urls.json"
 RESULTS_PATH = ROOT / "dashboard" / "global_results.json"
 DASHBOARD_AUDIT_PATH = ROOT / "dashboard" / "source_lock.json"
 REAL_DATA_GLOB = "data_real/*.json"
@@ -64,6 +65,7 @@ def audit_results(
     policy = policy or load_json(POLICY_PATH)
     catalog = catalog or load_json(CATALOG_PATH)
     results = results or load_json(RESULTS_PATH)
+    exact_products = load_json(EXACT_PRODUCTS_PATH) if EXACT_PRODUCTS_PATH.exists() else {"products": {}}
     required = policy["required_provenance_fields"]
     approved_urls = official_resource_urls(catalog)
     approved_resources = [
@@ -167,6 +169,7 @@ def audit_results(
         "official_resources_url": policy["official_resources_url"],
         "message": message,
         "approved_resources": approved_resources,
+        "exact_products": exact_products.get("products", {}),
         "verified_calculations": verified_calculations,
         "blocked_sources": blocked_sources,
         "missing_provenance": missing_provenance,

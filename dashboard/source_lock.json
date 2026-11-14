@@ -83,6 +83,37 @@
       "resource_url": "https://gportal.jaxa.jp/gpr/index/index"
     }
   ],
+  "exact_products": {
+    "earth_elevation_aster_gdem_v3": {
+      "dataset_name": "ASTER Global Digital Elevation Model V003",
+      "provider": "NASA / METI / ASTER Science Team / LP DAAC",
+      "approved_portal_url": "https://search.earthdata.nasa.gov",
+      "exact_product_url": "https://doi.org/10.5067/ASTER/ASTGTM.003",
+      "version_or_product_id": "ASTGTM.003",
+      "coverage_and_resolution": "Global land DEM; 1 arc-second posting (approximately 30 m at the equator).",
+      "used_for": "Earth terrain re-ingestion and the supplied ASTER tile set.",
+      "citation": "NASA/METI/AIST/Japan Spacesystems and U.S./Japan ASTER Science Team, ASTER Global Digital Elevation Model V003."
+    },
+    "moon_elevation_lola_20m_south_pole": {
+      "dataset_name": "LOLA South Polar Digital Elevation Model",
+      "provider": "NASA Goddard Space Flight Center Planetary Geodesy Data Archive",
+      "approved_portal_url": "https://pds-geosciences.wustl.edu/missions/lro/",
+      "exact_product_url": "https://pgda.gsfc.nasa.gov/data/LOLA_20mpp/LDEM_80S_20MPP_ADJ.TIF",
+      "version_or_product_id": "LDEM_80S_20MPP_ADJ.TIF",
+      "coverage_and_resolution": "80\u201390 degrees south lunar polar stereographic DEM at 20 m/pixel.",
+      "used_for": "Lunar south-pole terrain re-ingestion."
+    },
+    "mars_elevation_mola_megdr": {
+      "dataset_name": "Mars Global Surveyor MOLA MEGDR Topography",
+      "provider": "NASA Planetary Data System Geosciences Node",
+      "approved_portal_url": "https://pds.nasa.gov",
+      "exact_product_url": "https://pds-geosciences.wustl.edu/mgs/mgs-m-mola-5-megdr-l3-v1/mgsl_300x/meg004/megt90n000cb.img",
+      "dataset_page_url": "https://pds-geosciences.wustl.edu/missions/mgs/megdr.html",
+      "version_or_product_id": "MGS-M-MOLA-5-MEGDR-L3-V1",
+      "coverage_and_resolution": "Global Mars topography MEGDR map at 4 pixels per degree.",
+      "used_for": "Mars terrain re-ingestion and the AnalogX Mars targets."
+    }
+  },
   "verified_calculations": [
     {
       "site_id": "askja-iceland",
