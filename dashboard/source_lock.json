@@ -83,6 +83,27 @@
       "resource_url": "https://gportal.jaxa.jp/gpr/index/index"
     }
   ],
+  "verified_calculations": [
+    {
+      "site_id": "askja-iceland",
+      "site_name": "Askja and Holuhraun, Iceland",
+      "dataset_name": "ASTER Global Digital Elevation Model V003",
+      "version_or_product_id": "ASTGTM.003",
+      "resource_url": "https://search.earthdata.nasa.gov",
+      "comparisons": {
+        "lunar_south_pole_lola": {
+          "target_source": "NASA LRO LOLA south-polar DEM",
+          "similarity_score_percent": 1.46,
+          "interpretation": "Low terrain similarity; Askja is substantially less rugged than the lunar south-polar target in the matched slope profile."
+        },
+        "mars_jezero_mola": {
+          "target_source": "NASA MGS MOLA global DEM",
+          "similarity_score_percent": 93.9,
+          "interpretation": "High terrain-profile similarity only; this does not establish geological, climatic, atmospheric or operational equivalence."
+        }
+      }
+    }
+  ],
   "blocked_sources": [
     {
       "location": "dashboard/global_results.json:method.source_records",

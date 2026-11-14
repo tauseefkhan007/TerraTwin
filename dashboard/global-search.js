@@ -101,6 +101,19 @@
         }));
         const workspace = $('gs-ranking-workspace');
         if (workspace) workspace.hidden = !sourceLockReady();
+        const sample = $('gs-verified-sample');
+        const verified = audit.verified_calculations?.[0];
+        if (sample && verified) {
+            sample.hidden = false;
+            $('gs-verified-sample-title').textContent = `${verified.site_name} · ${verified.version_or_product_id}`;
+            $('gs-verified-sample-source').textContent = `Official ${verified.dataset_name} terrain calculation from ${verified.resource_url}.`;
+            const labels = { lunar_south_pole_lola: 'Moon · LRO LOLA', mars_jezero_mola: 'Mars · MOLA' };
+            $('gs-verified-score-grid').replaceChildren(...Object.entries(verified.comparisons || {}).map(([key, value]) =>
+                el('div', { class: 'gs-verified-score' }, [
+                    el('span', { text: labels[key] || value.target_source || key }),
+                    el('strong', { text: `${Number(value.similarity_score_percent).toFixed(2)}%` }),
+                ])));
+        }
     }
 
     function rankedRows() {

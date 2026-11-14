@@ -120,9 +120,27 @@ def audit_results(
                 })
 
     missing_provenance: list[dict[str, Any]] = []
+    verified_calculations: list[dict[str, Any]] = []
     paths = list(real_data_paths) if real_data_paths is not None else sorted(ROOT.glob(REAL_DATA_GLOB))
     for path in paths:
         record = load_json(path)
+        if record.get("record_type") == "official_source_terrain_calculation":
+            comparisons = record.get("terrain_only_comparisons", {})
+            verified_calculations.append({
+                "site_id": record.get("site_id"),
+                "site_name": record.get("site_name"),
+                "dataset_name": record.get("dataset_name"),
+                "version_or_product_id": record.get("version_or_product_id"),
+                "resource_url": record.get("resource_url"),
+                "comparisons": {
+                    key: {
+                        "target_source": value.get("target_source"),
+                        "similarity_score_percent": value.get("similarity_score_percent"),
+                        "interpretation": value.get("interpretation"),
+                    }
+                    for key, value in comparisons.items()
+                },
+            })
         absent = missing_fields(record, required)
         if absent:
             missing_provenance.append({"file": str(path.relative_to(ROOT)), "missing_fields": absent})
@@ -149,6 +167,7 @@ def audit_results(
         "official_resources_url": policy["official_resources_url"],
         "message": message,
         "approved_resources": approved_resources,
+        "verified_calculations": verified_calculations,
         "blocked_sources": blocked_sources,
         "missing_provenance": missing_provenance,
         "required_provenance_fields": required,

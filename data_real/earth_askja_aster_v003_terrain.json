@@ -1,0 +1,64 @@
+{
+  "record_type": "official_source_terrain_calculation",
+  "site_id": "askja-iceland",
+  "site_name": "Askja and Holuhraun, Iceland",
+  "dataset_name": "ASTER Global Digital Elevation Model V003",
+  "provider": "NASA / METI / ASTER Science Team / LP DAAC",
+  "resource_url": "https://search.earthdata.nasa.gov",
+  "product_url": "https://doi.org/10.5067/ASTER/ASTGTM.003",
+  "retrieval_date": "2026-11-14",
+  "version_or_product_id": "ASTGTM.003",
+  "source_tiles": [
+    "ASTGTMV003_N64W016_dem.tif",
+    "ASTGTMV003_N64W017_dem.tif",
+    "ASTGTMV003_N64W018_dem.tif",
+    "ASTGTMV003_N65W016_dem.tif",
+    "ASTGTMV003_N65W017_dem.tif",
+    "ASTGTMV003_N65W018_dem.tif"
+  ],
+  "processing_step": "Merged six adjacent ASTER tiles; reprojected to EPSG:32628; bilinearly resampled to a 30 m metric grid; evaluated 80 km region with 40 km windows and 10 km stride; calculated differential slope signatures at 240, 480, 960, 1920 and 3840 m baselines.",
+  "coverage_and_resolution": "80 km x 80 km region centered at 65.03 N, 16.75 W; 30 m output grid; source tiles at 1 arc-second posting.",
+  "quality_flags": [
+    "All six source tiles opened as valid GeoTIFF with EPSG:4326 and full valid-cell coverage.",
+    "No water cells were masked in the extracted region using the 0.5 m threshold.",
+    "Terrain-only result; climate and geology were not included.",
+    "Not a landing-site safety assessment and not a final global ranking."
+  ],
+  "region_metrics": {
+    "valid_windows": 36,
+    "water_fraction": 0.0,
+    "mean_elevation_m": 727.76,
+    "elevation_p01_p99_relief_m": 1148.27,
+    "median_slope_deg_by_baseline": {
+      "240": 2.5435,
+      "480": 2.0222,
+      "960": 1.7467,
+      "1920": 1.5971,
+      "3840": 1.4023
+    },
+    "p90_slope_deg_by_baseline": {
+      "240": 11.7670,
+      "480": 9.8409,
+      "960": 7.5928,
+      "1920": 5.7422,
+      "3840": 4.2792
+    },
+    "hurst": 0.7941
+  },
+  "terrain_only_comparisons": {
+    "lunar_south_pole_lola": {
+      "target_source": "NASA LRO LOLA south-polar DEM",
+      "target_resource_url": "https://pds-geosciences.wustl.edu/missions/lro/",
+      "similarity_score_percent": 1.46,
+      "best_window_center": {"lat": 65.12011, "lon": -16.75064},
+      "interpretation": "Low terrain similarity; Askja is substantially less rugged than the lunar south-polar target in the matched slope profile."
+    },
+    "mars_jezero_mola": {
+      "target_source": "NASA MGS MOLA global DEM",
+      "target_resource_url": "https://pds.nasa.gov",
+      "similarity_score_percent": 93.90,
+      "best_window_center": {"lat": 65.20995, "lon": -16.96491},
+      "interpretation": "High terrain-profile similarity only; this does not establish geological, climatic, atmospheric or operational equivalence."
+    }
+  }
+}
