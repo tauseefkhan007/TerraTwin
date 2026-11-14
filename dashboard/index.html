@@ -3424,6 +3424,8 @@
         let mapResizeFrame = 0;
         let earthRenderer, earthScene, earthCamera, earthOrbitControls;
         let earthMarkerGroup, earthRaycaster, earthPointer, earthResizeObserver;
+        let earthGlobeSurface, earthGlobeBody = null, earthGlobeClickListener = null;
+        const threePlanetTextures = new Map();
         let earthRenderFrame = 0;
         let earthFocusFrame = 0;
         let detailedMapMode = false;
@@ -3536,6 +3538,9 @@
                 throw new Error('Target-site catalogue is missing its site list or analog matches.');
             }
             const sitesById = new Map();
+            const legacyAnalogIds = new Set(analogSites
+                .filter(site => !site.id.startsWith('terrain-'))
+                .map(site => site.id));
             payload.target_sites.forEach(site => {
                 if (!site.id || !site.name || !['Moon', 'Mars'].includes(site.body)
                     || !Number.isFinite(site.lat) || !Number.isFinite(site.lon)
@@ -3548,13 +3553,13 @@
             });
             for (const body of ['moon', 'mars']) {
                 const matches = payload.analog_matches[body];
-                if (!Array.isArray(matches) || matches.length !== analogSites.length) {
+                if (!Array.isArray(matches) || matches.length !== legacyAnalogIds.size) {
                     throw new Error(`The ${body} mapping must include each Earth analog once.`);
                 }
                 const matchedAnalogIds = new Set();
                 matches.forEach(match => {
                     const target = sitesById.get(match.target_site_id);
-                    if (!analogSites.some(site => site.id === match.earth_analog_id)
+                    if (!legacyAnalogIds.has(match.earth_analog_id)
                         || matchedAnalogIds.has(match.earth_analog_id)
                         || !target || target.body.toLowerCase() !== body
                         || !Array.isArray(match.shared_features)
@@ -3744,7 +3749,7 @@
             renderTargetSiteCatalog();
             updateTargetSiteHighlights();
             updateSiteNavigationControls();
-            if (cesiumViewer && panToSite) focusEarthGlobe(site.lat, site.lon, 650, 1600000);
+            if ((cesiumViewer || earthRenderer) && panToSite) focusEarthGlobe(site.lat, site.lon, 650, 1600000);
             return true;
         }
 
@@ -3770,6 +3775,7 @@
                 const selectedTarget = getTargetSiteById(selectedTargetSiteId);
                 if (selectedTarget) renderSelectedSiteDetails(selectedTarget);
                 if (cesiumViewer) renderCesiumLandmarks(currentView);
+                else if (earthRenderer) renderThreePlanetLandmarks(currentView);
             }
             updateTargetSiteHighlights();
             updateSiteNavigationControls();
@@ -4418,6 +4424,231 @@
             );
         }
 
+        function clearThreeGlobeMarkers() {
+            if (!earthMarkerGroup) return;
+            while (earthMarkerGroup.children.length) {
+                const marker = earthMarkerGroup.children[0];
+                earthMarkerGroup.remove(marker);
+                marker.geometry?.dispose();
+                if (Array.isArray(marker.material)) marker.material.forEach(material => material.dispose());
+                else marker.material?.dispose();
+            }
+        }
+
+        function createLunarFallbackTexture() {
+            if (threePlanetTextures.has('moon')) return threePlanetTextures.get('moon');
+            const canvas = document.createElement('canvas');
+            canvas.width = 1024;
+            canvas.height = 512;
+            const context = canvas.getContext('2d');
+            if (!context) return null;
+            context.fillStyle = '#7f8992';
+            context.fillRect(0, 0, canvas.width, canvas.height);
+            const seeded = value => {
+                const x = Math.sin(value * 12.9898) * 43758.5453;
+                return x - Math.floor(x);
+            };
+            for (let index = 0; index < 260; index += 1) {
+                const x = seeded(index + 1.7) * canvas.width;
+                const y = seeded(index + 9.1) * canvas.height;
+                const radius = 2 + seeded(index + 17.3) * 15;
+                const shade = Math.round(85 + seeded(index + 21.9) * 80);
+                context.beginPath();
+                context.arc(x, y, radius, 0, Math.PI * 2);
+                context.fillStyle = `rgba(${shade}, ${shade}, ${shade}, 0.30)`;
+                context.fill();
+                context.beginPath();
+                context.arc(x - radius * 0.18, y - radius * 0.18, radius * 0.72, 0, Math.PI * 2);
+                context.strokeStyle = 'rgba(235, 239, 242, 0.18)';
+                context.lineWidth = Math.max(1, radius * 0.09);
+                context.stroke();
+            }
+            const texture = new THREE.CanvasTexture(canvas);
+            texture.encoding = THREE.sRGBEncoding;
+            threePlanetTextures.set('moon', texture);
+            return texture;
+        }
+
+        function loadThreePlanetTexture(body) {
+            if (!window.THREE) return Promise.resolve(null);
+            const localAsset = body === 'earth'
+                ? 'assets/earth-blue-marble-optimized.webp'
+                : body === 'mars'
+                    ? 'assets/mars-viking-mdim21-equirectangular.jpg'
+                    : null;
+            if (!localAsset) return Promise.resolve(createLunarFallbackTexture());
+            if (threePlanetTextures.has(body)) return Promise.resolve(threePlanetTextures.get(body));
+            return new Promise(resolve => {
+                const loader = new THREE.TextureLoader();
+                loader.load(localAsset, texture => {
+                    texture.encoding = THREE.sRGBEncoding;
+                    texture.anisotropy = earthRenderer?.capabilities?.getMaxAnisotropy?.() || 1;
+                    threePlanetTextures.set(body, texture);
+                    resolve(texture);
+                }, undefined, () => resolve(null));
+            });
+        }
+
+        async function setThreePlanetSurface(body) {
+            if (!earthGlobeSurface || !window.THREE || !PLANETARY_SURFACES[body]) return;
+            earthGlobeBody = body;
+            const material = earthGlobeSurface.material;
+            const colors = { earth: '#2b6f9e', moon: '#8a949c', mars: '#a8583c' };
+            material.color.set(colors[body] || colors.earth);
+            material.map = null;
+            material.needsUpdate = true;
+            const texture = await loadThreePlanetTexture(body);
+            if (earthGlobeBody !== body || !earthGlobeSurface) return;
+            if (texture) {
+                material.map = texture;
+                material.color.set('#ffffff');
+            }
+            material.needsUpdate = true;
+            const caption = document.getElementById('globe-caption');
+            if (caption) caption.textContent = body === 'moon'
+                ? 'Local 3D lunar reference globe · procedural crater texture · target coordinates are approximate'
+                : `${PLANETARY_SURFACES[body].name} surface · local NASA reference texture · not live imagery`;
+            earthRenderer?.render(earthScene, earthCamera);
+        }
+
+        function renderThreePlanetLandmarks(body) {
+            if (!earthMarkerGroup || !['moon', 'mars'].includes(body)) return;
+            clearThreeGlobeMarkers();
+            const targetSites = (targetSiteCatalog?.target_sites || [])
+                .filter(site => site.body.toLowerCase() === body)
+                .map(site => ({ ...site, targetSite: true, latitude: site.lat, longitude: site.lon }));
+            const legacyLandmarks = (PLANETARY_LANDMARKS[body] || [])
+                .filter(landmark => !targetSites.some(site => site.name.toLowerCase().includes(landmark.name.toLowerCase())))
+                .map(landmark => ({ ...landmark, targetSite: false }));
+            [...legacyLandmarks, ...targetSites].forEach(landmark => {
+                const color = landmark.targetSite
+                    ? body === 'mars' ? 0xffa067 : 0x83def2
+                    : 0xffd783;
+                const marker = new THREE.Mesh(
+                    new THREE.SphereGeometry(landmark.targetSite ? 0.034 : 0.026, 12, 10),
+                    new THREE.MeshBasicMaterial({ color })
+                );
+                marker.position.copy(latLonToEarthVector(landmark.latitude, landmark.longitude, 1.018));
+                marker.userData.landmark = landmark;
+                earthMarkerGroup.add(marker);
+            });
+        }
+
+        function handleThreeGlobeClick(event) {
+            if (!earthRenderer || !earthRaycaster || !earthPointer || !earthMarkerGroup) return;
+            const rect = earthRenderer.domElement.getBoundingClientRect();
+            earthPointer.x = ((event.clientX - rect.left) / rect.width) * 2 - 1;
+            earthPointer.y = -((event.clientY - rect.top) / rect.height) * 2 + 1;
+            earthRaycaster.setFromCamera(earthPointer, earthCamera);
+            const hit = earthRaycaster.intersectObjects(earthMarkerGroup.children, false)[0];
+            if (!hit) return;
+            const clickEvent = { clientX: event.clientX, clientY: event.clientY };
+            if (hit.object.userData.site) {
+                const site = hit.object.userData.site;
+                selectSite(site, false);
+                showEarthGlobePopup(site, clickEvent);
+            } else if (hit.object.userData.landmark) {
+                const landmark = hit.object.userData.landmark;
+                if (landmark.targetSite) showTargetSitePopup(landmark, clickEvent);
+                else showPlanetaryLandmarkPopup(landmark, clickEvent);
+            }
+        }
+
+        function initThreePlanetGlobe(body = currentView) {
+            if (earthRenderer) {
+                switchThreePlanetGlobe(body, false);
+                return true;
+            }
+            if (!window.THREE?.WebGLRenderer || !window.WebGLRenderingContext) {
+                throw new Error('Three.js WebGL is unavailable in this browser.');
+            }
+            const container = document.getElementById('map');
+            if (!container) throw new Error('The globe container is missing.');
+            if (map) {
+                map.remove();
+                map = null;
+                markers = [];
+            }
+            container.replaceChildren();
+            container.classList.remove('leaflet-fallback');
+            container.classList.add('globe-active');
+            const width = Math.max(1, container.clientWidth || 640);
+            const height = Math.max(1, container.clientHeight || 360);
+            earthScene = new THREE.Scene();
+            earthScene.background = new THREE.Color(0x020816);
+            earthCamera = new THREE.PerspectiveCamera(34, width / height, 0.1, 100);
+            earthCamera.position.set(0, 0.08, 3.35);
+            earthRenderer = new THREE.WebGLRenderer({ antialias: true, alpha: false, powerPreference: 'low-power' });
+            earthRenderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 1.8));
+            earthRenderer.setSize(width, height, false);
+            container.appendChild(earthRenderer.domElement);
+            earthRenderer.domElement.setAttribute('aria-label', 'Interactive 3D planetary globe');
+            earthRenderer.domElement.style.cursor = 'grab';
+
+            if (THREE.OrbitControls) {
+                earthOrbitControls = new THREE.OrbitControls(earthCamera, earthRenderer.domElement);
+                earthOrbitControls.enableDamping = true;
+                earthOrbitControls.dampingFactor = 0.07;
+                earthOrbitControls.enablePan = false;
+                earthOrbitControls.minDistance = 2.15;
+                earthOrbitControls.maxDistance = 5.5;
+                earthOrbitControls.autoRotate = true;
+                earthOrbitControls.autoRotateSpeed = 0.22;
+                earthOrbitControls.addEventListener('start', () => { earthOrbitControls.autoRotate = false; });
+            }
+            earthScene.add(new THREE.AmbientLight(0xb9d8ff, 1.05));
+            const keyLight = new THREE.DirectionalLight(0xffffff, 1.75);
+            keyLight.position.set(4, 3, 5);
+            earthScene.add(keyLight);
+            const rimLight = new THREE.DirectionalLight(0x4f9ed5, 0.7);
+            rimLight.position.set(-4, -1, -3);
+            earthScene.add(rimLight);
+            earthGlobeSurface = new THREE.Mesh(
+                new THREE.SphereGeometry(1, 64, 48),
+                new THREE.MeshStandardMaterial({ color: '#2b6f9e', roughness: 0.92, metalness: 0 })
+            );
+            earthScene.add(earthGlobeSurface);
+            earthMarkerGroup = new THREE.Group();
+            earthScene.add(earthMarkerGroup);
+            earthRaycaster = new THREE.Raycaster();
+            earthPointer = new THREE.Vector2();
+            earthGlobeClickListener = handleThreeGlobeClick;
+            earthRenderer.domElement.addEventListener('pointerup', earthGlobeClickListener);
+            if (window.ResizeObserver) {
+                earthResizeObserver = new ResizeObserver(resizeEarthGlobe);
+                earthResizeObserver.observe(container);
+            }
+            earthGlobeBody = body;
+            setThreePlanetSurface(body);
+            if (body === 'earth') renderEarthMarkers(getVisibleSites());
+            else renderThreePlanetLandmarks(body);
+            const mapFrame = document.querySelector('.map-frame');
+            if (mapFrame) mapFrame.dataset.planetBody = body;
+            mapReady = true;
+            const mapState = document.getElementById('map-state');
+            if (mapState) mapState.hidden = true;
+            setMapNotice('');
+            updateDetailedMapControls();
+            animateEarthGlobe();
+            scheduleMapResize();
+            return true;
+        }
+
+        function switchThreePlanetGlobe(body, animate = true) {
+            if (!earthRenderer) return false;
+            earthGlobeBody = body;
+            if (animate && earthGlobeSurface) earthGlobeSurface.rotation.y += 0.12;
+            setThreePlanetSurface(body);
+            if (body === 'earth') renderEarthMarkers(getVisibleSites());
+            else renderThreePlanetLandmarks(body);
+            const mapFrame = document.querySelector('.map-frame');
+            if (mapFrame) mapFrame.dataset.planetBody = body;
+            updateDetailedMapControls();
+            renderMapMarkers();
+            earthRenderer.render(earthScene, earthCamera);
+            return true;
+        }
+
         function disposeEarthGlobe() {
             if (earthRenderFrame) cancelAnimationFrame(earthRenderFrame);
             if (earthFocusFrame) cancelAnimationFrame(earthFocusFrame);
@@ -4443,6 +4674,9 @@
             cesiumCameraStates.clear();
             clearCesiumSiteEntities();
             if (earthResizeObserver) earthResizeObserver.disconnect();
+            if (earthRenderer?.domElement && earthGlobeClickListener) {
+                earthRenderer.domElement.removeEventListener('pointerup', earthGlobeClickListener);
+            }
             earthOrbitControls?.dispose();
             earthScene?.traverse(object => {
                 object.geometry?.dispose();
@@ -4458,6 +4692,10 @@
             earthMarkerGroup = null;
             earthRaycaster = null;
             earthPointer = null;
+            earthGlobeSurface = null;
+            earthGlobeBody = null;
+            earthGlobeClickListener = null;
+            earthResizeObserver = null;
             earthRenderFrame = 0;
             earthFocusFrame = 0;
             document.getElementById('map')?.classList.remove('globe-active');
@@ -4474,6 +4712,14 @@
             mapReady = false;
             const mapState = document.getElementById('map-state');
             const frame = document.querySelector('.map-frame');
+            try {
+                initThreePlanetGlobe(failedBody);
+                const notice = document.getElementById('map-notice');
+                if (notice) notice.hidden = true;
+                return;
+            } catch (threeError) {
+                console.warn('Local 3D globe fallback could not initialize.', threeError);
+            }
             if (failedBody === 'earth') {
                 if (mapState) {
                     mapState.textContent = '3D Earth unavailable; loading the interactive Earth tile map…';
@@ -4497,11 +4743,21 @@
         function initEarthGlobe() {
             const mapState = document.getElementById('map-state');
             if (mapState) {
-                mapState.textContent = `Loading ${PLANETARY_SURFACES[currentView]?.name || 'Earth'} surface imagery…`;
+                mapState.textContent = `Loading ${PLANETARY_SURFACES[currentView]?.name || 'Earth'} globe…`;
                 mapState.hidden = false;
             }
-            loadCesiumLibrary().then(createCesiumViewer).catch(error => {
-                fallbackToLeaflet(`Cesium could not initialize (${error.message}); switching to Leaflet tiles.`);
+            let localGlobeReady = false;
+            try {
+                localGlobeReady = initThreePlanetGlobe(currentView);
+            } catch (error) {
+                console.warn('Local 3D globe could not initialize immediately.', error);
+            }
+            if (localGlobeReady) return;
+            loadCesiumLibrary().then(() => {
+                return createCesiumViewer();
+            }).catch(error => {
+                if (!localGlobeReady) fallbackToLeaflet(`Cesium could not initialize (${error.message}); loading the available map fallback.`);
+                else console.warn(`Cesium unavailable; keeping the local 3D globe. ${error.message}`);
             });
         }
 
@@ -4510,6 +4766,7 @@
             try {
                 const Cesium = window.Cesium;
                 if (!Cesium || !window.WebGLRenderingContext) throw new Error('WebGL is unavailable in this browser.');
+                if (earthRenderer) disposeEarthGlobe();
                 container.classList.remove('leaflet-fallback');
                 container.classList.add('globe-active');
                 cesiumViewer = new Cesium.Viewer(container, {
@@ -4557,12 +4814,7 @@
 
         function renderEarthMarkers(sites) {
             if (!earthMarkerGroup) return;
-            while (earthMarkerGroup.children.length) {
-                const marker = earthMarkerGroup.children[0];
-                earthMarkerGroup.remove(marker);
-                marker.geometry.dispose();
-                marker.material.dispose();
-            }
+            clearThreeGlobeMarkers();
 
             sites.forEach(site => {
                 const selected = site.id === selectedSite.id;
@@ -4927,6 +5179,29 @@
         }
 
         function focusEarthGlobe(latitude, longitude, duration = 650, targetDistance = null, onComplete = null, onCancel = null) {
+            if (!cesiumViewer && earthRenderer && earthCamera) {
+                const distance = Math.max(2.25, Math.min(5.2, (targetDistance || 1600000) / 700000));
+                const destination = latLonToEarthVector(latitude, longitude, distance);
+                if (earthFocusFrame) cancelAnimationFrame(earthFocusFrame);
+                const start = earthCamera.position.clone();
+                const startedAt = performance.now();
+                const durationMs = Math.max(120, duration);
+                const animateFocus = now => {
+                    const progress = Math.min(1, (now - startedAt) / durationMs);
+                    const eased = 1 - Math.pow(1 - progress, 3);
+                    earthCamera.position.lerpVectors(start, destination, eased);
+                    earthOrbitControls?.target.set(0, 0, 0);
+                    earthOrbitControls?.update();
+                    if (progress < 1) {
+                        earthFocusFrame = requestAnimationFrame(animateFocus);
+                    } else {
+                        earthFocusFrame = 0;
+                        onComplete?.();
+                    }
+                };
+                earthFocusFrame = requestAnimationFrame(animateFocus);
+                return true;
+            }
             if (!cesiumViewer) return false;
             cesiumViewer.camera.cancelFlight();
             const currentHeight = getCesiumCameraCartographic()?.height ?? targetDistance ?? 1600000;
@@ -4969,7 +5244,7 @@
             status?.setAttribute('aria-label', currentIndex < 0
                 ? `${activeSite?.name || 'No current site'}, ${sites.length} sites available`
                 : `${currentIndex + 1} of ${sites.length}: ${activeSite.name}`);
-            controls.hidden = !cesiumViewer || !['earth', 'moon', 'mars'].includes(currentView);
+            controls.hidden = !(cesiumViewer || earthRenderer) || !['earth', 'moon', 'mars'].includes(currentView);
             controls.querySelectorAll('.site-navigation-button').forEach(button => {
                 button.disabled = siteNavigationInFlight || sites.length <= 1;
             });
@@ -5058,7 +5333,10 @@
         }
 
         function handleEarthGlobeVisibility() {
-            if (!document.hidden) cesiumViewer?.scene.requestRender();
+            if (!document.hidden) {
+                cesiumViewer?.scene.requestRender();
+                if (earthRenderer && !earthRenderFrame) animateEarthGlobe();
+            }
         }
 
         function updateDetailedMapControls() {
@@ -5077,7 +5355,8 @@
                 detailedButton.disabled = !earthAvailable;
                 detailedButton.setAttribute('aria-pressed', String(detailedMapMode));
             }
-            if (globeButton) globeButton.hidden = !detailedMapMode || !cesiumViewer;
+            const globeAvailable = Boolean(cesiumViewer || earthRenderer);
+            if (globeButton) globeButton.hidden = !detailedMapMode || !globeAvailable;
             if (placeForm) placeForm.hidden = true;
             mapContainer.classList.remove('detailed-earth-map', 'globe-display-mode');
 
@@ -5092,11 +5371,11 @@
                 expandMapButton.setAttribute('aria-label', mapExpanded ? 'Collapse map' : 'Expand map');
                 expandMapButton.setAttribute('aria-pressed', String(mapExpanded));
             }
-            if (controls) controls.hidden = !cesiumViewer;
+            if (controls) controls.hidden = !globeAvailable;
             document.getElementById('globe-zoom-in')?.setAttribute('aria-label', `Zoom in on ${bodyName}`);
             document.getElementById('globe-zoom-out')?.setAttribute('aria-label', `Zoom out from ${bodyName}`);
             document.getElementById('globe-reset')?.setAttribute('aria-label', `Reset ${bodyName} globe overview`);
-            if (caption) caption.hidden = !cesiumViewer;
+            if (caption) caption.hidden = !globeAvailable;
             if (focusSelected) focusSelected.hidden = !earthAvailable;
             if (imagerySelector) {
                 imagerySelector.disabled = !cesiumViewer || !earthAvailable;
@@ -5108,7 +5387,9 @@
                     ? `${PLANETARY_SURFACES[currentView].name} surface · ${PLANETARY_SURFACES[currentView].sourceLabel}`
                     : cesiumViewer
                         ? 'One continuous Earth surface · imagery detail blends in as you zoom · © OpenStreetMap contributors'
-                        : 'Cesium unavailable · showing analog locations on the Leaflet fallback';
+                        : earthRenderer
+                            ? 'Local 3D globe · bundled reference imagery and interactive candidate markers'
+                            : 'Cesium unavailable · showing analog locations on the Leaflet fallback';
             }
             if (cesiumViewer && caption) {
                 caption.textContent = currentView === 'earth'
@@ -5370,7 +5651,12 @@
                 return;
             }
             if (earthRenderer) {
-                renderEarthMarkers(visibleSites);
+                if (currentView === 'earth') {
+                    renderEarthMarkers(visibleSites);
+                } else {
+                    clearThreeGlobeMarkers();
+                    renderThreePlanetLandmarks(currentView);
+                }
                 updateMapState(visibleSites.length);
                 return;
             }
@@ -5844,7 +6130,7 @@
                 button.setAttribute('aria-pressed', String(isSelected));
             });
 
-            if (cesiumViewer && currentView === 'earth' && panToSite) {
+            if ((cesiumViewer || earthRenderer) && currentView === 'earth' && panToSite) {
                 focusEarthGlobe(site.lat, site.lon, 650, 1600000);
             } else if (map && detailedMapMode && panToSite) {
                 const zoom = Math.max(6, Math.min(12, map.getZoom()));
@@ -5967,27 +6253,6 @@
         // SWITCH TARGET
         function switchTarget(target) {
             if (!['earth', 'moon', 'mars'].includes(target)) return;
-            if (window.__terratwinSourceLock?.ready !== true) {
-                currentView = target;
-                if (target !== 'earth') currentTarget = target;
-                ['earth', 'moon', 'mars'].forEach(planet => {
-                    const button = document.getElementById(`btn-target-${planet}`);
-                    if (!button) return;
-                    button.classList.toggle('active', target === planet);
-                    button.setAttribute('aria-pressed', String(target === planet));
-                });
-                const badge = document.getElementById('target-badge');
-                if (badge) badge.innerText = target === 'earth'
-                    ? 'Earth · Candidate network'
-                    : target === 'moon' ? 'Target · Lunar south pole' : 'Target · Mars Jezero crater';
-                const notice = document.getElementById('scientific-source-lock-notice');
-                const message = document.getElementById('scientific-source-lock-message');
-                if (notice && message) {
-                    message.textContent = `${target === 'earth' ? 'Earth' : target === 'moon' ? 'Moon' : 'Mars'} view selected. The imported terrain ranking remains available; additional legacy views are paused.`;
-                    notice.hidden = true;
-                }
-                return;
-            }
             const targetChanged = currentView !== target;
             if (targetChanged) siteNavigationInFlight = false;
             const sortControl = document.getElementById('leaderboard-sort');
@@ -6016,9 +6281,10 @@
                     }
                 });
             }
+            else if (earthRenderer) switchThreePlanetGlobe(target, true);
             else if (!cesiumViewer) fallbackToLeaflet(target === 'earth'
-                ? 'Cesium is unavailable; the interactive Earth Leaflet fallback is active.'
-                : `${PLANETARY_SURFACES[target].name} globe is unavailable. Earth tiles are not substituted.`);
+                ? 'Cesium is unavailable; loading the local interactive Earth globe.'
+                : `Cesium is unavailable; loading the local ${PLANETARY_SURFACES[target].name} globe.`);
             updateDetailedMapControls();
             ['earth', 'moon', 'mars'].forEach(planet => {
                 const button = document.getElementById(`btn-target-${planet}`);
@@ -6041,7 +6307,10 @@
                     : 'Planetary Target: Mars Jezero Crater';
             }
 
-            if (target !== 'earth') selectedSite = target === 'moon' ? analogSites[0] : analogSites[2];
+            if (target !== 'earth') {
+                const legacySites = analogSites.filter(site => !site.id.startsWith('terrain-'));
+                selectedSite = target === 'moon' ? legacySites[0] : legacySites[2] || legacySites[0] || selectedSite;
+            }
 
             renderMapMarkers();
             updateLeaderboards();
