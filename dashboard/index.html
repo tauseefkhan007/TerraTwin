@@ -2612,7 +2612,7 @@
         <div class="results-load-error" id="results-load-error" role="alert" aria-live="assertive" hidden></div>
         <div class="source-integrity-banner" id="scientific-source-lock-notice" role="alert" aria-live="assertive" hidden>
             <strong>SCIENCE DATA LOCKED</strong>
-            <span id="scientific-source-lock-message">Unverified scientific outputs are hidden until the official Resources-tab audit passes.</span>
+            <span id="scientific-source-lock-message">Legacy scientific outputs are paused until data validation passes.</span>
             <a href="https://www.spaceappschallenge.org/2026/challenges/permanent-moon-base-locations-and-mars/?tab=resources" target="_blank" rel="noopener noreferrer">View approved resources</a>
         </div>
 
@@ -2647,15 +2647,15 @@
                 <section class="gs-source-lock is-blocked" id="gs-source-lock" aria-labelledby="gs-source-lock-heading">
                     <div class="gs-source-lock-head">
                         <span class="gs-source-lock-badge" id="gs-source-lock-badge">LEGACY RANKING LOCK</span>
-                        <h2 id="gs-source-lock-heading">Official source lock for legacy ACI rankings</h2>
+                        <h2 id="gs-source-lock-heading">Legacy ranking status</h2>
                     </div>
-                    <p id="gs-source-lock-message">Checking whether every displayed input has an exact URL and provenance record from the official NASA Space Apps Resources tab.</p>
+                    <p id="gs-source-lock-message">Checking legacy ranking validation.</p>
                     <p class="gs-source-lock-detail" id="gs-source-lock-detail"></p>
                     <p class="gs-analogx-inventory" id="gs-analogx-inventory">Loading the complete terrain dataset…</p>
-                    <p class="gs-source-lock-detail">Exact product URLs selected for re-ingestion:</p>
+                    <p class="gs-source-lock-detail">Data products selected for validation:</p>
                     <ul class="gs-source-lock-resources" id="gs-exact-products"></ul>
                     <ul class="gs-source-lock-resources" id="gs-approved-resources"></ul>
-                    <a class="gs-link" href="https://www.spaceappschallenge.org/2026/challenges/permanent-moon-base-locations-and-mars/?tab=resources" target="_blank" rel="noopener noreferrer">Open the official Resources tab</a>
+                    <a class="gs-link" href="https://www.spaceappschallenge.org/2026/challenges/permanent-moon-base-locations-and-mars/?tab=resources" target="_blank" rel="noopener noreferrer">Open approved data resources</a>
                     <div class="gs-verified-sample" id="gs-verified-sample" hidden>
                         <div class="gs-verified-sample-head"><span class="eyebrow">Verified partial calculation</span><strong id="gs-verified-sample-title"></strong></div>
                         <p id="gs-verified-sample-source"></p>
@@ -2785,7 +2785,7 @@
                             <button type="button" class="terratwin-action primary" onclick="navigateToDashboardSection('global-section','global-tab','tab-global'); return false;">Explore mission matches</button>
                             <button type="button" class="terratwin-action" onclick="navigateToDashboardSection('science-section','data-tab','tab-data'); return false;">Inspect the evidence</button>
                         </div>
-                        <p class="terratwin-source-lock"><strong>Source policy:</strong> final challenge claims will use only the <a class="gs-link" href="https://www.spaceappschallenge.org/2026/challenges/permanent-moon-base-locations-and-mars/?tab=resources" target="_blank" rel="noopener noreferrer">official NASA Space Apps 2026 Resources tab</a>. The imported baseline is clearly labelled until that lock is complete.</p>
+                        <p class="terratwin-source-lock"><strong>Data policy:</strong> final challenge claims require verified source records. The imported baseline is clearly labelled until validation is complete.</p>
                     </div>
                     <div class="terratwin-cosmos" aria-label="Animated Earth, Moon and Mars system">
                         <span class="tt-connection" aria-hidden="true"></span>

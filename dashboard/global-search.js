@@ -221,14 +221,14 @@
         if (!sourceLockReady()) {
             for (const body of ['moon', 'mars']) {
                 const set = (id, text) => { const node = $(id); if (node) { node.classList.remove('json-loading-skeleton'); node.textContent = text; } };
-                set(`takeaway-${body}-site`, 'Awaiting official source lock');
+                set(`takeaway-${body}-site`, 'Legacy score paused');
                 set(`takeaway-${body}-score`, 'No score displayed');
                 set(`takeaway-${body}-breakdown`, 'The inherited baseline is hidden until approved-source products are re-ingested.');
             }
             const verdict = $('takeaway-validation');
             if (verdict) {
                 verdict.classList.remove('json-loading-skeleton');
-                verdict.textContent = state.sourceLock?.message || 'Numeric rankings are hidden until the official Resources-tab audit passes.';
+                verdict.textContent = 'Legacy ranking scores are paused pending complete data validation.';
             }
             return;
         }
@@ -243,7 +243,7 @@
         const verdict = $('takeaway-validation');
         if (verdict) {
             verdict.classList.remove('json-loading-skeleton');
-            verdict.textContent = `Inherited baseline: DEM and climate records for ${state.data.sites.length} regions. Candidates beat negative controls ${(validation.mean_auc_aci * 100).toFixed(0)}% of the time on average (terrain alone: ${(validation.mean_auc_terrain * 100).toFixed(0)}%). Revalidate against the official Resources tab before final claims.`;
+            verdict.textContent = `Inherited baseline: DEM and climate records for ${state.data.sites.length} regions. Candidates beat negative controls ${(validation.mean_auc_aci * 100).toFixed(0)}% of the time on average (terrain alone: ${(validation.mean_auc_terrain * 100).toFixed(0)}%). Revalidate the data before final claims.`;
         }
     }
 
