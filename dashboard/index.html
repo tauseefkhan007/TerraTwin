@@ -4492,6 +4492,7 @@
         async function setThreePlanetSurface(body) {
             if (!earthGlobeSurface || !window.THREE || !PLANETARY_SURFACES[body]) return;
             earthGlobeBody = body;
+            updatePlanetaryNavigatorState(body);
             const material = earthGlobeSurface.material;
             const colors = { earth: '#2b6f9e', moon: '#8a949c', mars: '#a8583c' };
             material.color.set(colors[body] || colors.earth);
@@ -4509,6 +4510,27 @@
                 ? 'Local 3D lunar reference globe · procedural crater texture · target coordinates are approximate'
                 : `${PLANETARY_SURFACES[body].name} surface · local NASA reference texture · not live imagery`;
             earthRenderer?.render(earthScene, earthCamera);
+        }
+
+        function updatePlanetaryNavigatorState(body = currentView) {
+            const imageryStatus = document.querySelector('.map-imagery-status');
+            const mapHeading = document.querySelector('.map-heading-overlay h2');
+            const mapEyebrow = document.querySelector('.map-heading-overlay > span:first-child');
+            const siteLegend = document.querySelector('.map-frame > .map-legend');
+            if (!PLANETARY_SURFACES[body]) return;
+            if (body === 'earth') {
+                if (mapEyebrow) mapEyebrow.textContent = 'Earth analog network';
+                if (mapHeading) mapHeading.textContent = 'Candidate field sites';
+                if (siteLegend) siteLegend.hidden = false;
+                if (imageryStatus) imageryStatus.innerHTML = 'EARTH · LOCAL 3D GLOBE<br>49 imported terrain records';
+                return;
+            }
+            if (mapEyebrow) mapEyebrow.textContent = body === 'moon' ? 'LUNAR TARGET GLOBE' : 'MARTIAN TARGET GLOBE';
+            if (mapHeading) mapHeading.textContent = body === 'moon' ? 'Lunar surface' : 'Martian surface';
+            if (siteLegend) siteLegend.hidden = true;
+            if (imageryStatus) imageryStatus.innerHTML = body === 'moon'
+                ? 'MOON · LRO WAC REFERENCE<br>Named target landmarks'
+                : 'MARS · MOLA / VIKING REFERENCE<br>Named target landmarks';
         }
 
         function renderThreePlanetLandmarks(body) {
@@ -4629,6 +4651,7 @@
             if (mapState) mapState.hidden = true;
             setMapNotice('');
             updateDetailedMapControls();
+            updatePlanetaryNavigatorState(body);
             animateEarthGlobe();
             scheduleMapResize();
             return true;
@@ -4643,6 +4666,7 @@
             else renderThreePlanetLandmarks(body);
             const mapFrame = document.querySelector('.map-frame');
             if (mapFrame) mapFrame.dataset.planetBody = body;
+            updatePlanetaryNavigatorState(body);
             updateDetailedMapControls();
             renderMapMarkers();
             earthRenderer.render(earthScene, earthCamera);
@@ -6317,6 +6341,13 @@
             selectSite(selectedSite);
             if (target !== 'earth') {
                 generate3DTargetMesh(target);
+            }
+            if (targetChanged) {
+                const exploreSection = document.getElementById('explore-section');
+                if (exploreSection) {
+                    switchTab('map-tab', 'tab-map');
+                    requestAnimationFrame(() => exploreSection.scrollIntoView({ behavior: 'smooth', block: 'start' }));
+                }
             }
         }
 
