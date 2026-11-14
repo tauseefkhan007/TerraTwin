@@ -15,6 +15,7 @@ from src.analog_score import (
 )
 from src.geodata import grid_offsets, offsets_to_latlon
 from src.multiscale import mask_water, sliding_windows, terrain_signature
+from src.source_lock import audit_results, load_json
 
 ROOT = Path(__file__).resolve().parents[1]
 
@@ -156,6 +157,46 @@ class TestCatalogsAndResults(unittest.TestCase):
             self.assertEqual(acis, sorted(acis, reverse=True))
             if target["body"] == "mars":
                 self.assertTrue(all(b >= results["method"]["mars_min_valid_baseline_m"] for b in target["valid_baselines_m"]))
+
+
+class TestOfficialSourceLock(unittest.TestCase):
+    def test_official_catalog_matches_challenge_policy(self):
+        policy = load_json(ROOT / "data" / "terratwin_source_policy.json")
+        catalog = load_json(ROOT / "data" / "official_resources_catalog.json")
+        self.assertEqual(catalog["source_page_url"], policy["official_resources_url"])
+        self.assertGreaterEqual(len(catalog["resources"]), 5)
+        self.assertTrue(all(item["listed_on_official_resources_tab"] for item in catalog["resources"]))
+        self.assertEqual(len({item["resource_url"] for item in catalog["resources"]}), len(catalog["resources"]))
+
+    def test_inherited_snapshot_is_blocked_until_provenance_is_complete(self):
+        audit = audit_results()
+        self.assertFalse(audit["ready"])
+        self.assertEqual(audit["status"], "blocked_inherited_baseline")
+        self.assertTrue(audit["blocked_sources"])
+        self.assertEqual(len(audit["missing_provenance"]), 3)
+
+    def test_complete_official_record_can_pass(self):
+        policy = load_json(ROOT / "data" / "terratwin_source_policy.json")
+        catalog = load_json(ROOT / "data" / "official_resources_catalog.json")
+        resource_url = catalog["resources"][0]["resource_url"]
+        record = {
+            "dataset_name": "Test product",
+            "provider": "NASA",
+            "resource_url": resource_url,
+            "retrieval_date": "2026-11-14",
+            "version_or_product_id": "TEST-1",
+            "processing_step": "Test normalization",
+            "coverage_and_resolution": "Test coverage at test resolution",
+            "quality_flags": "Test-only fixture",
+        }
+        audit = audit_results(
+            policy=policy,
+            catalog=catalog,
+            results={"method": {"source_records": {"earth": record}}},
+            real_data_paths=[],
+        )
+        self.assertTrue(audit["ready"])
+        self.assertEqual(audit["status"], "ready")
 
 
 if __name__ == "__main__":

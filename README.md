@@ -12,6 +12,8 @@ TerraTwin is an interactive screening tool for comparing Earth field environment
 
 The current branch is the first TerraTwin build: an MIT-licensed scientific scoring base, Earth–Moon–Mars intro animation, four mission-profile presets, a separate coverage score, per-site guardrails, famous-analog benchmark checks and a deterministic grounded Science Copilot scaffold.
 
+The official source lock is enforced by [`src/source_lock.py`](src/source_lock.py), [`data/official_resources_catalog.json`](data/official_resources_catalog.json) and [`dashboard/source_lock.json`](dashboard/source_lock.json). The dashboard hides numeric ranking results while the audit is blocked. This is intentional: the imported baseline must not be mistaken for official challenge evidence.
+
 ## Inherited scientific baseline
 
 The sections below document the imported PTAE v2 baseline for the team while the TerraTwin source-compliant adapters are being prepared. Treat its numeric results as development fixtures, not final challenge evidence.
@@ -72,7 +74,15 @@ pip install -r requirements.txt
 python -m src.global_search                         # downloads real data (cached in cache/), writes dashboard/global_results.json
 python -m http.server --directory dashboard 8000    # open http://localhost:8000/
 ```
-Open the **Global Search** tab, choose a Moon or Mars target, change the mission-priority sliders, and click any region.
+Open the **Global Search** tab after the source audit passes. Until then, it shows the approved Resources-tab catalog and the exact missing provenance/source checks instead of displaying the inherited rankings.
+
+Run the audit after every data ingestion:
+
+```bash
+./.venv/bin/python -m src.source_lock --write-dashboard
+```
+
+Exit code `0` means the official source lock passed. Exit code `2` means the dashboard remains blocked because at least one input is not traceable to an exact approved URL or lacks provenance.
 
 ### Open the frontend on another laptop
 
@@ -106,7 +116,8 @@ Tests (offline): `python -m unittest discover -s tests -v`. Browser tests also n
 ## Repository layout
 ```text
 catalog/                 Earth sites and Moon/Mars targets (curated tags, heritage, limits)
-src/geodata.py           Fetch LOLA, MOLA, terrain tiles, NASA POWER
+src/geodata.py           Data adapters retained for the provisional development baseline
+src/source_lock.py       Official Resources-tab catalog and provenance gate
 src/multiscale.py        Baseline slope signatures, sliding windows, water masking
 src/analog_score.py      Terrain/environment/geology similarity, aggregation, robustness, AUC
 src/global_search.py     End-to-end pipeline and CLI
@@ -120,7 +131,7 @@ main.py, src/terrain_metrics.py, similarity_matcher.py, synthetic_generator.py
 `python main.py --target moon --json-out` and `--target mars` still regenerate the calibrated synthetic-terrain demo used by the dashboard's "Explore Sites" and "Compare" tabs. Those scores are **not** measurements; use Global Search for real-data results.
 
 ## Inherited open-data references
-LRO LOLA (NASA PGDA), MGS MOLA (USGS Astrogeology), AWS Terrain Tiles (SRTM, NASADEM, ArcticDEM and others), NASA POWER. References are listed in the dashboard and in [docs/SCIENTIFIC_METHODOLOGY.md](docs/SCIENTIFIC_METHODOLOGY.md).
+The approved resource list is recorded in [data/official_resources_catalog.json](data/official_resources_catalog.json). The inherited baseline references LRO LOLA, MGS MOLA, AWS Terrain Tiles and NASA POWER, but those inherited numeric results remain blocked until each exact product is re-ingested from a resource listed on the official page and receives complete provenance.
 
 ## Use of Super Intelligence (SI) tools
 Per the Space Apps rules: the v1 prototype was drafted with an AI assistant, and the v2 redesign (data pipeline, scoring, dashboard tab, tests, documentation) was developed with GitHub Copilot. Design decisions, data choices and validity checks remain the team's responsibility.

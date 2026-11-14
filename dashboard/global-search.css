@@ -5,6 +5,18 @@
 #global-tab .gs-stat strong { font-size: 1.02rem; color: #e5f4ff; line-height: 1.25; overflow-wrap: anywhere; }
 #global-tab .gs-stat span { font-size: 0.68rem; color: var(--text-dim); line-height: 1.4; }
 
+#global-tab .gs-source-lock { margin: 14px 0; padding: 15px 17px; border: 1px solid rgba(224, 138, 109, .68); border-radius: 12px; background: linear-gradient(145deg, rgba(99, 40, 35, .36), rgba(32, 19, 25, .92)); color: #ffe2d7; }
+#global-tab .gs-source-lock.is-ready { border-color: rgba(95, 200, 160, .7); background: linear-gradient(145deg, rgba(24, 81, 66, .38), rgba(7, 34, 35, .92)); color: #d9f7e9; }
+#global-tab .gs-source-lock-head { display: flex; align-items: center; gap: 9px; flex-wrap: wrap; }
+#global-tab .gs-source-lock h2 { margin: 0; font-size: .88rem; color: inherit; }
+#global-tab .gs-source-lock-badge { display: inline-flex; align-items: center; min-height: 22px; padding: 2px 8px; border: 1px solid currentColor; border-radius: 999px; font-size: .58rem; letter-spacing: .08em; font-weight: 700; }
+#global-tab .gs-source-lock p { margin: 8px 0 0; font-size: .72rem; line-height: 1.5; }
+#global-tab .gs-source-lock-detail { color: #ffc7b8; }
+#global-tab .gs-source-lock.is-ready .gs-source-lock-detail { color: #afe6cb; }
+#global-tab .gs-source-lock-resources { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 4px 18px; margin: 11px 0; padding-left: 17px; font-size: .66rem; line-height: 1.45; }
+#global-tab .gs-source-lock-resources a { color: #bfeeff; }
+#global-tab .gs-source-lock-resources small { color: #9db4c5; }
+
 #global-tab .gs-controls { display: grid; grid-template-columns: minmax(220px, 1fr) minmax(0, 2fr); gap: 14px; align-items: start; }
 #global-tab .gs-field { display: grid; gap: 5px; min-width: 0; }
 #global-tab .gs-field > label, #global-tab .gs-field > .gs-label { font-size: 0.62rem; letter-spacing: 0.08em; text-transform: uppercase; color: var(--text-faint); }
@@ -65,12 +77,14 @@
 @media (max-width: 1100px) {
     #global-tab .gs-stat-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
     #global-tab .gs-main, #global-tab .gs-detail, #global-tab .gs-controls, #global-tab .gs-two { grid-template-columns: minmax(0, 1fr); }
+    #global-tab .gs-source-lock-resources { grid-template-columns: repeat(2, minmax(0, 1fr)); }
 }
 @media (max-width: 640px) {
     #global-tab .gs-sliders { grid-template-columns: minmax(0, 1fr); }
     #global-tab .gs-stat-grid { grid-template-columns: minmax(0, 1fr); }
     #global-tab .gs-map { height: 320px; }
     #global-tab .gs-discovery-list { columns: 1; }
+    #global-tab .gs-source-lock-resources { grid-template-columns: minmax(0, 1fr); }
 }
 
 #global-tab .section-heading p { padding: 6px 10px; border-radius: 8px; background: rgba(5, 13, 24, 0.78); }

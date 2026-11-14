@@ -35,7 +35,7 @@ The MVP is a modular monolith with offline geospatial preprocessing and a static
 ```text
 ┌──────────────────────────────────────────────────────────────┐
 │                    External scientific sources               │
-│  NASA Earthdata │ USGS │ ESA Copernicus │ NASA PDS │ PGDA    │
+│  NASA Earthdata │ NASA Worldview │ NASA PDS/LRO │ ESA/CSA/JAXA │
 └──────────────────────────────┬───────────────────────────────┘
                                │
                                ▼
@@ -80,18 +80,9 @@ The dashboard has a local demo path and an optional OAuth path. When the FastAPI
 
 ### 3.1 Scientific data sources
 
-For the challenge submission, the source of truth is the official [NASA Space Apps 2026 Resources tab](https://www.spaceappschallenge.org/2026/challenges/permanent-moon-base-locations-and-mars/?tab=resources). The data catalog must be populated only from resources listed there. The items below describe the planned modality map; each item is pending an explicit Resources-tab URL and provenance record before it becomes final evidence.
+For the challenge submission, the source of truth is the official [NASA Space Apps 2026 Resources tab](https://www.spaceappschallenge.org/2026/challenges/permanent-moon-base-locations-and-mars/?tab=resources). The exact resources captured from that page are recorded in [`data/official_resources_catalog.json`](data/official_resources_catalog.json): NASA Earthdata Search, NASA Worldview, NASA PDS, NASA LRO, NASA LRO Diviner, CSA RADARSAT resources, ESA Copernicus Data Space, ESA Open Science Catalog and JAXA G-Portal.
 
-Planned authoritative modalities:
-
-- NASA SRTM or ASTER GDEM for Earth elevation.
-- USGS Landsat Collection 2 for Earth surface reflectance and optional surface temperature.
-- ESA Copernicus Sentinel-2 for optional Earth optical context.
-- NASA LRO LOLA for lunar topography, slope and roughness.
-- NASA MOLA products for Martian topography.
-- NASA PDS and mission-specific archives for planetary provenance.
-
-Data-source references should be recorded in `data/dataset_catalog.json` and displayed in the application.
+No URL outside that catalog may be used in final challenge evidence. `src/source_lock.py` validates exact resource URLs and required provenance fields; `dashboard/source_lock.json` is the generated audit consumed by the frontend. The inherited adapters and result JSON remain available for regression testing only and are hidden from the ranking workspace until the audit passes.
 
 ### 3.2 Ingestion layer
 
@@ -99,13 +90,13 @@ The ingestion layer is an offline collection of scripts rather than a live servi
 
 Responsibilities:
 
-- Download or import source files.
-- Record source URL, product name, version and retrieval date.
+- Download or import source files from an exact URL in `data/official_resources_catalog.json`.
+- Record the complete provenance contract in `data/terratwin_source_policy.json`.
 - Validate file existence and basic metadata.
 - Convert source formats where necessary.
 - Preserve raw files separately from derived files.
 
-The ingestion layer must never silently replace failed downloads with invented values. If a source is unavailable, the pipeline should fail clearly or mark that feature unavailable.
+The ingestion layer must never silently replace failed downloads with invented values or an unapproved fallback. If a source is unavailable, the pipeline should fail clearly, mark that feature unavailable and keep the source lock blocked.
 
 ### 3.3 Geospatial preprocessing layer
 
@@ -558,7 +549,7 @@ Minimum protections:
 - Never commit credentials or tokens.
 - Sanitize any user-provided candidate names or report text.
 - Limit LLM input to structured, non-sensitive scientific data.
-- Use local fallback data when external sources fail.
+- Use local fallback data only for development diagnostics; never present it as final challenge evidence.
 - Pin dependency versions before the final demo.
 
 ## 10. Deployment architecture

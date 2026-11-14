@@ -1,0 +1,106 @@
+{
+  "source_page_url": "https://www.spaceappschallenge.org/2026/challenges/permanent-moon-base-locations-and-mars/?tab=resources",
+  "source_page_title": "Permanent Moon Base Locations and Mars — NASA Space Apps Challenge 2026 Resources",
+  "policy": "Only resources listed on the official challenge Resources tab may be used as final TerraTwin evidence.",
+  "resources": [
+    {
+      "id": "nasa-earthdata-search",
+      "name": "NASA Earthdata Search",
+      "provider": "NASA",
+      "scope": "Earth",
+      "resource_url": "https://search.earthdata.nasa.gov",
+      "allowed_modalities": ["Earth observation discovery", "Earth elevation", "Earth climate", "Earth imagery"],
+      "listed_on_official_resources_tab": true
+    },
+    {
+      "id": "nasa-worldview",
+      "name": "NASA Worldview",
+      "provider": "NASA",
+      "scope": "Earth",
+      "resource_url": "https://worldview.earthdata.nasa.gov",
+      "allowed_modalities": ["Earth satellite imagery", "environmental observations"],
+      "listed_on_official_resources_tab": true
+    },
+    {
+      "id": "nasa-pds",
+      "name": "NASA Planetary Data System (PDS)",
+      "provider": "NASA",
+      "scope": "Moon and Mars",
+      "resource_url": "https://pds.nasa.gov",
+      "allowed_modalities": ["lunar observations", "Martian observations", "orbital observations", "lander observations", "rover observations"],
+      "listed_on_official_resources_tab": true
+    },
+    {
+      "id": "nasa-lro",
+      "name": "NASA Lunar Reconnaissance Orbiter (LRO)",
+      "provider": "NASA",
+      "scope": "Moon",
+      "resource_url": "https://pds-geosciences.wustl.edu/missions/lro/",
+      "allowed_modalities": ["LROC", "LOLA", "Diviner", "LEND", "Mini-RF"],
+      "listed_on_official_resources_tab": true
+    },
+    {
+      "id": "nasa-lro-diviner",
+      "name": "NASA LRO Diviner Lunar Data",
+      "provider": "NASA",
+      "scope": "Moon",
+      "resource_url": "https://pds-geosciences.wustl.edu/missions/lro/diviner.htm",
+      "allowed_modalities": ["lunar thermal observations", "lunar surface temperature"],
+      "listed_on_official_resources_tab": true
+    },
+    {
+      "id": "csa-radarsat-constellation",
+      "name": "CSA RADARSAT Constellation Mission",
+      "provider": "Canadian Space Agency",
+      "scope": "Earth",
+      "resource_url": "https://donnees-data.asc-csa.gc.ca/en/dataset/rcm",
+      "allowed_modalities": ["Earth radar observations"],
+      "listed_on_official_resources_tab": true
+    },
+    {
+      "id": "csa-radarsat-1",
+      "name": "CSA RADARSAT-1",
+      "provider": "Canadian Space Agency",
+      "scope": "Earth",
+      "resource_url": "https://donnees-data.asc-csa.gc.ca/en/dataset/radarsat1",
+      "allowed_modalities": ["Earth radar observations"],
+      "listed_on_official_resources_tab": true
+    },
+    {
+      "id": "csa-sar-python-tutorial",
+      "name": "CSA SAR Python Tutorial",
+      "provider": "Canadian Space Agency",
+      "scope": "Earth",
+      "resource_url": "https://github.com/asc-csa/Synthetic_Aperture_Radar_Tutorial",
+      "allowed_modalities": ["SAR processing method"],
+      "listed_on_official_resources_tab": true
+    },
+    {
+      "id": "esa-copernicus-data-space",
+      "name": "ESA Copernicus Data Space Ecosystem",
+      "provider": "European Space Agency",
+      "scope": "Earth",
+      "resource_url": "https://dataspace.copernicus.eu",
+      "allowed_modalities": ["Earth observation discovery", "Earth imagery"],
+      "listed_on_official_resources_tab": true
+    },
+    {
+      "id": "esa-open-science-catalog",
+      "name": "ESA Open Science Catalog",
+      "provider": "European Space Agency",
+      "scope": "Earth and planetary science",
+      "resource_url": "https://opensciencedata.esa.int",
+      "allowed_modalities": ["open science datasets"],
+      "listed_on_official_resources_tab": true
+    },
+    {
+      "id": "jaxa-g-portal",
+      "name": "JAXA G-Portal",
+      "provider": "Japan Aerospace Exploration Agency",
+      "scope": "Earth and planetary science",
+      "resource_url": "https://gportal.jaxa.jp/gpr/index/index",
+      "allowed_modalities": ["Earth observation discovery", "planetary observation discovery"],
+      "listed_on_official_resources_tab": true
+    }
+  ]
+}

@@ -2502,6 +2502,17 @@
                     <p>Scans 40 km windows across each region and scores them on terrain, climate and geology. Includes less-studied regions and negative controls.</p>
                 </div>
                 <p class="results-load-error" id="gs-status" role="alert" hidden></p>
+                <section class="gs-source-lock is-blocked" id="gs-source-lock" aria-labelledby="gs-source-lock-heading">
+                    <div class="gs-source-lock-head">
+                        <span class="gs-source-lock-badge" id="gs-source-lock-badge">SOURCE LOCK</span>
+                        <h2 id="gs-source-lock-heading">Official Resources-tab source lock</h2>
+                    </div>
+                    <p id="gs-source-lock-message">Checking whether every displayed input has an exact URL and provenance record from the official NASA Space Apps Resources tab.</p>
+                    <p class="gs-source-lock-detail" id="gs-source-lock-detail"></p>
+                    <ul class="gs-source-lock-resources" id="gs-approved-resources"></ul>
+                    <a class="gs-link" href="https://www.spaceappschallenge.org/2026/challenges/permanent-moon-base-locations-and-mars/?tab=resources" target="_blank" rel="noopener noreferrer">Open the official Resources tab</a>
+                </section>
+                <div id="gs-ranking-workspace" hidden>
                 <div class="gs-stat-grid" id="gs-stat-grid" aria-label="Headline findings"></div>
 
                 <div class="card">
@@ -2606,6 +2617,7 @@
                 <div class="gs-two">
                     <div class="card"><div class="card-header"><div><span class="eyebrow">Open data used</span><h2>Data sources</h2></div></div><ul class="gs-validation-list" id="gs-method-data"></ul></div>
                     <div class="card"><div class="card-header"><div><span class="eyebrow">Literature</span><h2>References</h2></div></div><ul class="gs-validation-list" id="gs-refs"></ul></div>
+                </div>
                 </div>
             </section>
         </div>

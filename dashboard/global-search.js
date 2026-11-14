@@ -41,7 +41,7 @@
     };
 
     const state = {
-        data: null, targetId: null, weights: { ...PRESETS.balanced }, aggregation: 'geometric',
+        data: null, sourceLock: null, targetId: null, weights: { ...PRESETS.balanced }, aggregation: 'geometric',
         category: 'all', selectedSite: null, map: null, markerLayer: null, windowLayer: null, chart: null,
     };
 
@@ -71,6 +71,37 @@
 
     const siteById = id => state.data.sites.find(site => site.id === id);
     const currentTarget = () => state.data.targets.find(t => t.id === state.targetId);
+    const sourceLockReady = () => Boolean(state.sourceLock && state.sourceLock.ready === true && state.sourceLock.status === 'ready');
+
+    function renderSourceLock() {
+        const audit = state.sourceLock || {
+            ready: false,
+            status: 'blocked_missing_audit',
+            message: 'The source-lock audit could not be loaded, so numeric results remain hidden.',
+            approved_resources: [], blocked_sources: [], missing_provenance: [],
+        };
+        const root = $('gs-source-lock');
+        if (!root) return;
+        root.classList.toggle('is-blocked', !sourceLockReady());
+        root.classList.toggle('is-ready', sourceLockReady());
+        $('gs-source-lock-badge').textContent = sourceLockReady() ? 'SOURCE LOCK READY' : 'SOURCE LOCK BLOCKED';
+        $('gs-source-lock-heading').textContent = sourceLockReady()
+            ? 'Official Resources-tab source lock passed'
+            : 'Official Resources-tab source lock is blocking the ranking';
+        $('gs-source-lock-message').textContent = audit.message;
+        const blocked = audit.blocked_sources?.length || 0;
+        const missing = audit.missing_provenance?.length || 0;
+        $('gs-source-lock-detail').textContent = sourceLockReady()
+            ? 'The ranking workspace is enabled because every displayed input is traceable to an approved resource URL.'
+            : `${blocked} source checks blocked · ${missing} files missing provenance. No inherited score is presented as final challenge evidence.`;
+        const list = $('gs-approved-resources');
+        list.replaceChildren(...(audit.approved_resources || []).map(resource => {
+            const link = el('a', { href: resource.resource_url, target: '_blank', rel: 'noopener noreferrer', text: resource.name });
+            return el('li', {}, [link, document.createTextNode(' '), el('small', { text: `· ${resource.scope}` })]);
+        }));
+        const workspace = $('gs-ranking-workspace');
+        if (workspace) workspace.hidden = !sourceLockReady();
+    }
 
     function rankedRows() {
         const target = currentTarget();
@@ -126,6 +157,20 @@
 
     function renderHome() {
         const { body_summary: summary, validation } = state.data;
+        if (!sourceLockReady()) {
+            for (const body of ['moon', 'mars']) {
+                const set = (id, text) => { const node = $(id); if (node) { node.classList.remove('json-loading-skeleton'); node.textContent = text; } };
+                set(`takeaway-${body}-site`, 'Awaiting official source lock');
+                set(`takeaway-${body}-score`, 'No score displayed');
+                set(`takeaway-${body}-breakdown`, 'The inherited baseline is hidden until approved-source products are re-ingested.');
+            }
+            const verdict = $('takeaway-validation');
+            if (verdict) {
+                verdict.classList.remove('json-loading-skeleton');
+                verdict.textContent = state.sourceLock?.message || 'Numeric rankings are hidden until the official Resources-tab audit passes.';
+            }
+            return;
+        }
         for (const body of ['moon', 'mars']) {
             const top = summary[body].rankings[0];
             const site = siteById(top.site_id);
@@ -479,18 +524,30 @@
         const root = $('global-tab');
         if (!root) return;
         try {
-            const response = await fetch('global_results.json', { cache: 'no-store' });
-            if (!response.ok) throw new Error(`HTTP ${response.status}`);
-            state.data = await response.json();
+            const [resultsResponse, lockResponse] = await Promise.all([
+                fetch('global_results.json', { cache: 'no-store' }),
+                fetch('source_lock.json', { cache: 'no-store' }),
+            ]);
+            if (!resultsResponse.ok) throw new Error(`global_results.json HTTP ${resultsResponse.status}`);
+            state.data = await resultsResponse.json();
+            state.sourceLock = lockResponse.ok ? await lockResponse.json() : {
+                ready: false,
+                status: 'blocked_missing_audit',
+                message: `Source-lock audit unavailable (HTTP ${lockResponse.status}); numeric results remain hidden.`,
+                approved_resources: [], blocked_sources: [], missing_provenance: [],
+            };
         } catch (error) {
             const status = $('gs-status');
             if (status) { status.textContent = 'Global search results could not be loaded (global_results.json). Run python -m src.global_search.'; status.hidden = false; }
             return;
         }
+        window.__terratwinSourceLock = state.sourceLock;
+        renderSourceLock();
+        renderHome();
+        if (!sourceLockReady()) return;
         state.targetId = state.data.targets[0].id;
         window.__ptaeGlobal = state.data;
         renderSummary();
-        renderHome();
         buildControls();
         renderStaticPanels();
         renderBenchmarkValidation();

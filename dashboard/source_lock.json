@@ -1,0 +1,169 @@
+{
+  "status": "blocked_inherited_baseline",
+  "ready": false,
+  "audited_on": "2026-11-14",
+  "official_resources_url": "https://www.spaceappschallenge.org/2026/challenges/permanent-moon-base-locations-and-mars/?tab=resources",
+  "message": "Numeric ranking results are development fixtures and are hidden from final evidence until every input is re-ingested from an approved Resources-tab resource.",
+  "approved_resources": [
+    {
+      "id": "nasa-earthdata-search",
+      "name": "NASA Earthdata Search",
+      "provider": "NASA",
+      "scope": "Earth",
+      "resource_url": "https://search.earthdata.nasa.gov"
+    },
+    {
+      "id": "nasa-worldview",
+      "name": "NASA Worldview",
+      "provider": "NASA",
+      "scope": "Earth",
+      "resource_url": "https://worldview.earthdata.nasa.gov"
+    },
+    {
+      "id": "nasa-pds",
+      "name": "NASA Planetary Data System (PDS)",
+      "provider": "NASA",
+      "scope": "Moon and Mars",
+      "resource_url": "https://pds.nasa.gov"
+    },
+    {
+      "id": "nasa-lro",
+      "name": "NASA Lunar Reconnaissance Orbiter (LRO)",
+      "provider": "NASA",
+      "scope": "Moon",
+      "resource_url": "https://pds-geosciences.wustl.edu/missions/lro/"
+    },
+    {
+      "id": "nasa-lro-diviner",
+      "name": "NASA LRO Diviner Lunar Data",
+      "provider": "NASA",
+      "scope": "Moon",
+      "resource_url": "https://pds-geosciences.wustl.edu/missions/lro/diviner.htm"
+    },
+    {
+      "id": "csa-radarsat-constellation",
+      "name": "CSA RADARSAT Constellation Mission",
+      "provider": "Canadian Space Agency",
+      "scope": "Earth",
+      "resource_url": "https://donnees-data.asc-csa.gc.ca/en/dataset/rcm"
+    },
+    {
+      "id": "csa-radarsat-1",
+      "name": "CSA RADARSAT-1",
+      "provider": "Canadian Space Agency",
+      "scope": "Earth",
+      "resource_url": "https://donnees-data.asc-csa.gc.ca/en/dataset/radarsat1"
+    },
+    {
+      "id": "csa-sar-python-tutorial",
+      "name": "CSA SAR Python Tutorial",
+      "provider": "Canadian Space Agency",
+      "scope": "Earth",
+      "resource_url": "https://github.com/asc-csa/Synthetic_Aperture_Radar_Tutorial"
+    },
+    {
+      "id": "esa-copernicus-data-space",
+      "name": "ESA Copernicus Data Space Ecosystem",
+      "provider": "European Space Agency",
+      "scope": "Earth",
+      "resource_url": "https://dataspace.copernicus.eu"
+    },
+    {
+      "id": "esa-open-science-catalog",
+      "name": "ESA Open Science Catalog",
+      "provider": "European Space Agency",
+      "scope": "Earth and planetary science",
+      "resource_url": "https://opensciencedata.esa.int"
+    },
+    {
+      "id": "jaxa-g-portal",
+      "name": "JAXA G-Portal",
+      "provider": "Japan Aerospace Exploration Agency",
+      "scope": "Earth and planetary science",
+      "resource_url": "https://gportal.jaxa.jp/gpr/index/index"
+    }
+  ],
+  "blocked_sources": [
+    {
+      "location": "dashboard/global_results.json:method.source_records",
+      "reason": "The result snapshot has no per-layer provenance record with an exact official resource URL."
+    },
+    {
+      "location": "dashboard/global_results.json:method.data.earth_elevation",
+      "value": "AWS Terrain Tiles zoom 11 (SRTM/NASADEM/ArcticDEM composite), resampled to 120 m",
+      "reason": "Inherited source description cannot be verified against an exact URL listed on the official Resources tab."
+    },
+    {
+      "location": "dashboard/global_results.json:method.data.moon_elevation",
+      "value": "LRO LOLA 20 m south-polar DEM, block-averaged to 120 m",
+      "reason": "Inherited source description cannot be verified against an exact URL listed on the official Resources tab."
+    },
+    {
+      "location": "dashboard/global_results.json:method.data.mars_elevation",
+      "value": "MGS MOLA 463 m global DEM, bilinearly resampled to 120 m (baselines >= 960 m only)",
+      "reason": "Inherited source description cannot be verified against an exact URL listed on the official Resources tab."
+    },
+    {
+      "location": "dashboard/global_results.json:method.data.climate",
+      "value": "NASA POWER climatology (0.5 deg reanalysis; coarse for point sites)",
+      "reason": "Inherited source description cannot be verified against an exact URL listed on the official Resources tab."
+    },
+    {
+      "location": "dashboard/global_results.json:method.data.geology",
+      "value": "Curated expert priors in catalog/earth_sites.json and catalog/targets.json",
+      "reason": "Inherited source description cannot be verified against an exact URL listed on the official Resources tab."
+    }
+  ],
+  "missing_provenance": [
+    {
+      "file": "data_real/earth_iceland_askja.json",
+      "missing_fields": [
+        "coverage_and_resolution",
+        "dataset_name",
+        "processing_step",
+        "provider",
+        "quality_flags",
+        "resource_url",
+        "retrieval_date",
+        "version_or_product_id"
+      ]
+    },
+    {
+      "file": "data_real/target_mars_jezero_crater.json",
+      "missing_fields": [
+        "coverage_and_resolution",
+        "dataset_name",
+        "processing_step",
+        "provider",
+        "quality_flags",
+        "resource_url",
+        "retrieval_date",
+        "version_or_product_id"
+      ]
+    },
+    {
+      "file": "data_real/target_moon_artemis_south_pole.json",
+      "missing_fields": [
+        "coverage_and_resolution",
+        "dataset_name",
+        "processing_step",
+        "provider",
+        "quality_flags",
+        "resource_url",
+        "retrieval_date",
+        "version_or_product_id"
+      ]
+    }
+  ],
+  "required_provenance_fields": [
+    "dataset_name",
+    "provider",
+    "resource_url",
+    "retrieval_date",
+    "version_or_product_id",
+    "processing_step",
+    "coverage_and_resolution",
+    "quality_flags"
+  ],
+  "next_step": "Select exact products from the listed portals, download them, record the required provenance fields, regenerate global_results.json, and rerun this audit."
+}

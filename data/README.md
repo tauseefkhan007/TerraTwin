@@ -12,10 +12,8 @@ When you run `python main.py`, realistic procedural simulations are generated he
 - `earth_haughton_crater.npy`: Devon Island Arctic impact crater with breccia sheets.
 - `earth_hawaii_mauna_kea.npy`: Basaltic tephra cinder cones (source region of the JSC Mars-1 simulant).
 
-## Adding Real NASA / ESA GeoTIFFs
-To test real mission datasets, simply download GeoTIFFs and place them in this folder:
-1. **LRO LOLA (Moon):** [NASA PGDA 5m/pixel LOLA](https://pgda.gsfc.nasa.gov/data/LOLA_5mpp/) or [LROC QuickMap](https://quickmap.lroc.asu.edu/)
-2. **MGS MOLA (Mars):** [NASA Planetary Data System](https://pds-geosciences.wustl.edu/missions/mgs/mola.htm)
-3. **SRTM / ASTER (Earth):** [NASA Earthdata Search](https://search.earthdata.nasa.gov/)
+## Adding official-source GeoTIFFs
 
-The code will automatically detect and process `.tif` files using `rasterio`!
+Final challenge evidence may be ingested only from a resource listed on the official [NASA Space Apps 2026 Resources tab](https://www.spaceappschallenge.org/2026/challenges/permanent-moon-base-locations-and-mars/?tab=resources). The exact approved portals are recorded in [`official_resources_catalog.json`](official_resources_catalog.json).
+
+Every downloaded product must carry all fields in `terratwin_source_policy.json`: dataset name, provider, exact resource URL, retrieval date, product/version ID, processing step, coverage/resolution and quality flags. Run `./.venv/bin/python -m src.source_lock --write-dashboard` before displaying or submitting derived scores. Unapproved fallbacks remain development fixtures and are blocked from the dashboard's ranking workspace.
