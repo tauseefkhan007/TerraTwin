@@ -98,8 +98,8 @@
         if (analogxInventory) {
             const counts = state.analogx?.counts;
             analogxInventory.textContent = counts
-                ? `AnalogX repository import loaded: ${counts.earth_feature_records} Earth terrain records, ${counts.planetary_target_records} Mars targets, plus an inventory for ${counts.raw_hgt_tiles} HGT tiles and ${counts.raw_zip_caches} ZIP caches. The import remains development-only until its exact product provenance passes the official Resources-tab audit.`
-                : 'AnalogX repository import could not be loaded; no additional terrain records are available in this session.';
+                ? `Imported terrain data loaded: ${counts.earth_feature_records} Earth terrain records, ${counts.planetary_target_records} Mars targets, plus an inventory for ${counts.raw_hgt_tiles} HGT tiles and ${counts.raw_zip_caches} ZIP caches.`
+                : 'Imported terrain data could not be loaded; no additional terrain records are available in this session.';
         }
         const list = $('gs-approved-resources');
         list.replaceChildren(...(audit.approved_resources || []).map(resource => {
@@ -136,7 +136,7 @@
         if (!body || !summary) return;
         const dataset = state.analogx;
         if (!dataset) {
-            summary.textContent = 'The repository dataset could not be loaded in this session.';
+            summary.textContent = 'The imported terrain dataset could not be loaded in this session.';
             body.replaceChildren();
             return;
         }
@@ -147,7 +147,7 @@
         const selectedBody = $('gs-analogx-body')?.value || 'all';
         const rows = all.filter(row => (selectedBody === 'all' || row.body === selectedBody) &&
             (!filter || `${row.name} ${row.region || ''} ${row.country || ''}`.toLowerCase().includes(filter)));
-        summary.textContent = `${all.length} records loaded from commit ${dataset.source?.commit || 'unknown'}: ${earth.length} Earth terrain records and ${mars.length} Mars targets. Raw-cache inventory: ${dataset.counts?.raw_hgt_tiles || 0} HGT tiles and ${dataset.counts?.raw_zip_caches || 0} ZIP caches.`;
+        summary.textContent = `${all.length} records loaded: ${earth.length} Earth terrain records and ${mars.length} Mars targets. Raw-cache inventory: ${dataset.counts?.raw_hgt_tiles || 0} HGT tiles and ${dataset.counts?.raw_zip_caches || 0} ZIP caches.`;
         const number = value => Number.isFinite(Number(value)) ? Number(value).toFixed(2) : '—';
         body.replaceChildren(...rows.map(row => el('tr', {}, [
             el('td', { text: row.body }),
