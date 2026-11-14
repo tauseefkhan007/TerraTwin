@@ -4,6 +4,19 @@
 **Version:** Hackathon MVP  
 **Primary constraint:** Deliver a reliable scientific prototype in approximately two days
 
+## Implemented stack for this branch
+
+TerraTwin is currently a fast static-data MVP, not a deployed React/FastAPI service:
+
+- **Scientific pipeline:** Python 3.10+, NumPy, SciPy, rasterio, pyproj and Pillow.
+- **Application UI:** static HTML, CSS and vanilla JavaScript.
+- **Mapping and charts:** Leaflet and Chart.js loaded from public CDNs.
+- **Feature store:** cached JSON/GeoJSON and local files; SQLite is the planned compact application database once the source-compliant catalog is locked.
+- **Collaboration:** GitHub branches and pull requests.
+- **Source policy:** final evidence may use only the official NASA Space Apps 2026 Resources tab; inherited PTAE inputs are provisional and must be revalidated.
+
+The FastAPI and React boundaries described later are the planned extraction path if the MVP becomes a multi-user service. They are not required to run the current demo.
+
 ## 1. Architecture objectives
 
 TerraTwin must be:
@@ -14,7 +27,7 @@ TerraTwin must be:
 - Modular enough to replace prepared data with live ingestion later.
 - Explicit about data coverage, uncertainty and limitations.
 
-The recommended architecture is a modular monolith with offline geospatial preprocessing, a lightweight Python API and a React dashboard. Microservices, streaming infrastructure and real-time global raster processing are out of scope for the MVP.
+The MVP is a modular monolith with offline geospatial preprocessing and a static dashboard reading precomputed result JSON. Microservices, streaming infrastructure, a live API and real-time global raster processing are out of scope for the MVP.
 
 ## 2. High-level architecture
 
@@ -44,14 +57,14 @@ The recommended architecture is a modular monolith with offline geospatial prepr
                                │
                                ▼
 ┌──────────────────────────────┴───────────────────────────────┐
-│                         FastAPI backend                        │
-│ candidates │ comparisons │ rankings │ datasets │ methodology   │
+│               Optional FastAPI extraction                      │
+│ candidates │ comparisons │ rankings │ datasets │ methodology  │
 └──────────────────────────────┬───────────────────────────────┘
                                │ JSON/GeoJSON
                                ▼
 ┌──────────────────────────────────────────────────────────────┐
-│                    React + TypeScript frontend                │
-│ map │ rankings │ comparison charts │ reports │ explanations    │
+│              Static HTML/CSS/JavaScript dashboard              │
+│ map │ rankings │ comparison charts │ reports │ explanations   │
 └──────────────────────────────┬───────────────────────────────┘
                                │
                                ▼
@@ -60,9 +73,15 @@ The recommended architecture is a modular monolith with offline geospatial prepr
 
 ## 3. System components
 
+### 3.0 Authentication boundary
+
+The current public static demo intentionally has no login or personal-data collection; adding a fake client-only login would not protect research records. Team collaboration is handled through GitHub repository access and pull requests. If TerraTwin becomes a multi-user service, add GitHub OAuth through the planned FastAPI extraction layer, issue short-lived signed sessions, and keep user identity separate from the scientific feature store. Never store provider passwords or tokens in SQLite.
+
 ### 3.1 Scientific data sources
 
-The system should use authoritative public sources where possible:
+For the challenge submission, the source of truth is the official [NASA Space Apps 2026 Resources tab](https://www.spaceappschallenge.org/2026/challenges/permanent-moon-base-locations-and-mars/?tab=resources). The data catalog must be populated only from resources listed there. The items below describe the planned modality map; each item is pending an explicit Resources-tab URL and provenance record before it becomes final evidence.
+
+Planned authoritative modalities:
 
 - NASA SRTM or ASTER GDEM for Earth elevation.
 - USGS Landsat Collection 2 for Earth surface reflectance and optional surface temperature.
