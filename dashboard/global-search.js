@@ -130,6 +130,38 @@
         }
     }
 
+    function renderAnalogXDataset() {
+        const body = $('gs-analogx-table-body');
+        const summary = $('gs-analogx-summary');
+        if (!body || !summary) return;
+        const dataset = state.analogx;
+        if (!dataset) {
+            summary.textContent = 'The repository dataset could not be loaded in this session.';
+            body.replaceChildren();
+            return;
+        }
+        const earth = (dataset.earth_features || []).map(row => ({ ...row, body: 'Earth' }));
+        const mars = (dataset.planetary_targets || []).map(row => ({ ...row, body: 'Mars' }));
+        const all = [...earth, ...mars];
+        const filter = ($('gs-analogx-filter')?.value || '').trim().toLowerCase();
+        const selectedBody = $('gs-analogx-body')?.value || 'all';
+        const rows = all.filter(row => (selectedBody === 'all' || row.body === selectedBody) &&
+            (!filter || `${row.name} ${row.region || ''} ${row.country || ''}`.toLowerCase().includes(filter)));
+        summary.textContent = `${all.length} records loaded from commit ${dataset.source?.commit || 'unknown'}: ${earth.length} Earth terrain records and ${mars.length} Mars targets. Raw-cache inventory: ${dataset.counts?.raw_hgt_tiles || 0} HGT tiles and ${dataset.counts?.raw_zip_caches || 0} ZIP caches.`;
+        const number = value => Number.isFinite(Number(value)) ? Number(value).toFixed(2) : '—';
+        body.replaceChildren(...rows.map(row => el('tr', {}, [
+            el('td', { text: row.body }),
+            el('td', { text: row.name || row.region || row.id }),
+            el('td', { class: 'gs-num', text: number(row.lat) }),
+            el('td', { class: 'gs-num', text: number(row.lon) }),
+            el('td', { class: 'gs-num', text: number(row.elevation) }),
+            el('td', { class: 'gs-num', text: number(row.slope) }),
+            el('td', { class: 'gs-num', text: number(row.roughness) }),
+            el('td', { class: 'gs-num', text: number(row.relief) }),
+        ])));
+        if (!rows.length) body.append(el('tr', {}, [el('td', { colspan: '8', text: 'No repository records match this filter.' })]));
+    }
+
     function rankedRows() {
         const target = currentTarget();
         const rows = target.rankings
@@ -573,6 +605,9 @@
         window.__terratwinSourceLock = state.sourceLock;
         window.__nakshAnalogX = state.analogx;
         renderSourceLock();
+        renderAnalogXDataset();
+        $('gs-analogx-filter')?.addEventListener('input', renderAnalogXDataset);
+        $('gs-analogx-body')?.addEventListener('change', renderAnalogXDataset);
         renderHome();
         if (!sourceLockReady()) return;
         state.targetId = state.data.targets[0].id;

@@ -2646,6 +2646,24 @@
                         <small>Terrain-only screening result. Climate, geology, landing safety and global ranking remain excluded.</small>
                     </div>
                 </section>
+                <section class="card gs-analogx-card" id="gs-analogx-card" aria-labelledby="gs-analogx-heading">
+                    <div class="card-header">
+                        <div><span class="eyebrow">Repository dataset · loaded</span><h2 id="gs-analogx-heading">AnalogX terrain import</h2></div>
+                        <a class="gs-link" href="https://github.com/hazraanirban2006-boop/analogx-hackathon-ready/tree/76f3dbf1f418eb36cf244033468c8d2fcc249bfa" target="_blank" rel="noopener noreferrer">Open source repository</a>
+                    </div>
+                    <p class="gs-analogx-summary" id="gs-analogx-summary">Loading the complete repository dataset…</p>
+                    <div class="gs-analogx-controls">
+                        <label for="gs-analogx-filter">Filter records <input type="search" id="gs-analogx-filter" placeholder="Search site or region" autocomplete="off"></label>
+                        <label for="gs-analogx-body">Planet <select id="gs-analogx-body"><option value="all">Earth + Mars</option><option value="Earth">Earth</option><option value="Mars">Mars</option></select></label>
+                    </div>
+                    <div class="gs-table-wrap gs-analogx-table-wrap">
+                        <table class="gs-table gs-analogx-table">
+                            <thead><tr><th>Body</th><th>Location</th><th>Lat</th><th>Lon</th><th>Elevation m</th><th>Slope</th><th>Roughness</th><th>Relief</th></tr></thead>
+                            <tbody id="gs-analogx-table-body"></tbody>
+                        </table>
+                    </div>
+                    <small class="gs-analogx-footnote">Values are loaded directly from the repository’s feature tables. They are available for development and comparison; the legacy multi-modal ACI ranking remains source-locked until it is re-ingested.</small>
+                </section>
                 <div id="gs-ranking-workspace" hidden>
                 <div class="gs-stat-grid" id="gs-stat-grid" aria-label="Headline findings"></div>
 

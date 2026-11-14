@@ -14,6 +14,16 @@
 #global-tab .gs-source-lock-detail { color: #ffc7b8; }
 #global-tab .gs-source-lock.is-ready .gs-source-lock-detail { color: #afe6cb; }
 #global-tab .gs-analogx-inventory { padding: 9px 11px; border: 1px solid rgba(104, 215, 238, .24); border-radius: 8px; background: rgba(6, 29, 48, .55); color: #bceafa; }
+#global-tab .gs-analogx-card { margin-top: 18px; }
+#global-tab .gs-analogx-card .card-header { align-items: center; }
+#global-tab .gs-analogx-summary, #global-tab .gs-analogx-footnote { display: block; color: #a8c7d7; font-size: .74rem; line-height: 1.5; }
+#global-tab .gs-analogx-controls { display: flex; gap: 12px; align-items: end; flex-wrap: wrap; margin: 12px 0; }
+#global-tab .gs-analogx-controls label { display: grid; gap: 5px; color: #91afc0; font-size: .66rem; text-transform: uppercase; letter-spacing: .08em; }
+#global-tab .gs-analogx-controls input, #global-tab .gs-analogx-controls select { min-width: 180px; padding: 8px 10px; border: 1px solid rgba(129, 204, 226, .25); border-radius: 7px; background: rgba(5, 20, 34, .85); color: #eaf7ff; font: inherit; font-size: .75rem; text-transform: none; letter-spacing: 0; }
+#global-tab .gs-analogx-table-wrap { max-height: 430px; overflow: auto; }
+#global-tab .gs-analogx-table { min-width: 720px; }
+#global-tab .gs-analogx-table td, #global-tab .gs-analogx-table th { white-space: nowrap; }
+#global-tab .gs-analogx-footnote { margin: 12px 0 0; }
 #global-tab .gs-source-lock-resources { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 4px 18px; margin: 11px 0; padding-left: 17px; font-size: .66rem; line-height: 1.45; }
 #global-tab .gs-source-lock-resources a { color: #bfeeff; }
 #global-tab .gs-verified-sample { margin-top: 14px; padding: 12px 13px; border: 1px solid rgba(104, 215, 238, .35); border-radius: 10px; background: rgba(6, 29, 48, .72); }
