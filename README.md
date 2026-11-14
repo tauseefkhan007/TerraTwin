@@ -64,8 +64,8 @@ Full per-target tables: [results/global_ranking.csv](results/global_ranking.csv)
 
 ## Quickstart
 ```bash
-git clone https://github.com/JFJubayer/nasa-space-apps-2026-ptae.git
-cd nasa-space-apps-2026-ptae
+git clone https://github.com/tauseefkhan007/TerraTwin.git
+cd TerraTwin
 python3 -m venv .venv && source .venv/bin/activate
 pip install -r requirements.txt
 
@@ -73,6 +73,17 @@ python -m src.global_search                         # downloads real data (cache
 python -m http.server --directory dashboard 8000    # open http://localhost:8000/
 ```
 Open the **Global Search** tab, choose a Moon or Mars target, change the mission-priority sliders, and click any region.
+
+### Optional Google/GitHub sign-in
+
+The dashboard works in local demo mode without an auth service. To enable the two sign-in buttons, copy `.env.example` to `.env`, create OAuth apps with the callback URLs shown there, fill in the provider credentials, and run the API in a second terminal:
+
+```bash
+cp .env.example .env
+.venv/bin/uvicorn backend.app:app --host 127.0.0.1 --port 8001
+```
+
+The API issues a short-lived signed session cookie and never stores provider passwords or access tokens. Keep `.env` local; it is ignored by Git.
 
 Tests (offline): `python -m unittest discover -s tests -v`. Browser tests also need `pip install -r requirements-dev.txt && python -m playwright install chromium`.
 

@@ -12,10 +12,11 @@ TerraTwin is currently a fast static-data MVP, not a deployed React/FastAPI serv
 - **Application UI:** static HTML, CSS and vanilla JavaScript.
 - **Mapping and charts:** Leaflet and Chart.js loaded from public CDNs.
 - **Feature store:** cached JSON/GeoJSON and local files; SQLite is the planned compact application database once the source-compliant catalog is locked.
+- **Authentication:** small FastAPI service with GitHub/Google OAuth, signed HTTP-only session cookies and environment-only provider credentials.
 - **Collaboration:** GitHub branches and pull requests.
 - **Source policy:** final evidence may use only the official NASA Space Apps 2026 Resources tab; inherited PTAE inputs are provisional and must be revalidated.
 
-The FastAPI and React boundaries described later are the planned extraction path if the MVP becomes a multi-user service. They are not required to run the current demo.
+The scoring API and React client remain future extraction paths. The current demo still runs as static HTML/CSS/JavaScript; the FastAPI process is only needed when Google/GitHub sign-in is enabled.
 
 ## 1. Architecture objectives
 
@@ -75,7 +76,7 @@ The MVP is a modular monolith with offline geospatial preprocessing and a static
 
 ### 3.0 Authentication boundary
 
-The current public static demo intentionally has no login or personal-data collection; adding a fake client-only login would not protect research records. Team collaboration is handled through GitHub repository access and pull requests. If TerraTwin becomes a multi-user service, add GitHub OAuth through the planned FastAPI extraction layer, issue short-lived signed sessions, and keep user identity separate from the scientific feature store. Never store provider passwords or tokens in SQLite.
+The dashboard has a local demo path and an optional OAuth path. When the FastAPI auth service is running, GitHub and Google buttons redirect to the provider, validate a one-time state value, fetch the normalized profile, and issue a short-lived signed HTTP-only session cookie. Provider credentials and callback URLs are read from `.env`; provider passwords and access tokens are never stored. The current session holds identity only, separate from the scientific feature store. Team collaboration remains handled through GitHub repository access and pull requests.
 
 ### 3.1 Scientific data sources
 

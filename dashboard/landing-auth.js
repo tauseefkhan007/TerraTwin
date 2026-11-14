@@ -1,4 +1,4 @@
-/* TerraTwin landing interaction and static-MVP authentication gate. */
+/* TerraTwin landing interaction and OAuth-backed authentication gate. */
 (function () {
     'use strict';
 
@@ -13,6 +13,11 @@
     const status = document.getElementById('terratwin-auth-status');
     const workspace = document.getElementById('tab-home');
     const logoutButton = document.getElementById('terratwin-logout');
+    const apiBase = (window.TERRATWIN_API_BASE || 'http://localhost:8001').replace(/\/$/, '');
+
+    function setStatus(message) {
+        if (status) status.textContent = message;
+    }
 
     function openAuth() {
         if (landing.hidden || !auth.hidden) return;
@@ -29,8 +34,8 @@
         landing.focus({ preventScroll: true });
     }
 
-    function unlockDemo() {
-        sessionStorage.setItem('terratwin-authenticated', 'demo');
+    function unlockSession(kind) {
+        sessionStorage.setItem('terratwin-authenticated', kind);
         auth.hidden = true;
         landing.hidden = true;
         document.body.classList.remove('tt-landing-locked');
@@ -38,7 +43,15 @@
         workspace?.focus();
     }
 
+    function unlockDemo() {
+        unlockSession('demo');
+    }
+
     function logout() {
+        const kind = sessionStorage.getItem('terratwin-authenticated');
+        if (kind === 'oauth') {
+            fetch(`${apiBase}/auth/logout`, { method: 'POST', credentials: 'include' }).catch(() => {});
+        }
         sessionStorage.removeItem('terratwin-authenticated');
         auth.hidden = true;
         landing.hidden = false;
@@ -48,8 +61,33 @@
         landing.focus({ preventScroll: true });
     }
 
-    function stagedProviderMessage(provider) {
-        if (status) status.textContent = `${provider} OAuth is staged for the authenticated backend integration. Choose “Enter demo workspace” for this local MVP.`;
+    async function startOAuth(provider) {
+        setStatus(`Connecting to ${provider}…`);
+        try {
+            const health = await fetch(`${apiBase}/health`, { credentials: 'include' });
+            if (!health.ok) throw new Error('Auth service unavailable');
+            const config = await fetch(`${apiBase}/api/auth/config`, { credentials: 'include' });
+            const configured = config.ok && (await config.json()).providers?.[provider];
+            if (!configured) {
+                setStatus(`${provider} OAuth is not configured yet. Add its client ID and secret to the backend environment.`);
+                return;
+            }
+            const next = encodeURIComponent(window.location.href.split('?')[0]);
+            window.location.assign(`${apiBase}/auth/${provider}?next_url=${next}`);
+        } catch (error) {
+            setStatus('The TerraTwin auth service is offline. Start the backend on port 8001, or use demo access.');
+        }
+    }
+
+    async function syncOAuthSession() {
+        try {
+            const response = await fetch(`${apiBase}/api/me`, { credentials: 'include' });
+            if (!response.ok) return;
+            const payload = await response.json();
+            if (payload.authenticated) unlockSession('oauth');
+        } catch (error) {
+            // The static dashboard remains usable in demo mode when the API is not running.
+        }
     }
 
     landing.tabIndex = -1;
@@ -66,14 +104,24 @@
     });
     demoButton?.addEventListener('click', unlockDemo);
     logoutButton?.addEventListener('click', logout);
-    githubButton?.addEventListener('click', () => stagedProviderMessage('GitHub'));
-    googleButton?.addEventListener('click', () => stagedProviderMessage('Google'));
+    githubButton?.addEventListener('click', () => startOAuth('github'));
+    googleButton?.addEventListener('click', () => startOAuth('google'));
 
-    if (sessionStorage.getItem('terratwin-authenticated') === 'demo') {
+    const existingSession = sessionStorage.getItem('terratwin-authenticated');
+    if (existingSession === 'demo' || existingSession === 'oauth') {
         landing.hidden = true;
         document.body.classList.remove('tt-landing-locked');
         if (logoutButton) logoutButton.hidden = false;
     } else {
         document.body.classList.add('tt-landing-locked');
+    }
+
+    const query = new URLSearchParams(window.location.search);
+    if (query.get('auth') === 'error') {
+        auth.hidden = false;
+        setStatus(`Authentication failed or is not configured (${query.get('reason') || 'unknown error'}).`);
+        closeButton?.focus();
+    } else if (existingSession !== 'demo') {
+        syncOAuthSession();
     }
 })();
