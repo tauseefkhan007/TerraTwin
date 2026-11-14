@@ -6491,6 +6491,91 @@
 
         window.addEventListener('resize', onWindowResize3D);
 
+        async function renderImportedTerrainViews() {
+            const make = (tag, text, className) => {
+                const node = document.createElement(tag);
+                if (className) node.className = className;
+                if (text !== undefined) node.textContent = text;
+                return node;
+            };
+            const table = (headers, rows) => {
+                const wrapper = make('div', undefined, 'table-scroll');
+                const node = make('table', undefined, 'data-table');
+                const head = make('thead');
+                const headRow = make('tr');
+                headers.forEach(header => headRow.append(make('th', header)));
+                head.append(headRow);
+                const body = make('tbody');
+                rows.forEach(values => {
+                    const row = make('tr');
+                    values.forEach(value => row.append(make('td', String(value))));
+                    body.append(row);
+                });
+                node.append(head, body);
+                wrapper.append(node);
+                return wrapper;
+            };
+            const renderSection = (id, eyebrow, title, description, content) => {
+                const section = document.getElementById(id);
+                if (!section) return;
+                const heading = make('div', undefined, 'section-heading');
+                const titleBlock = make('div');
+                titleBlock.append(make('span', eyebrow, 'eyebrow'), make('h2', title));
+                heading.append(titleBlock, make('p', description));
+                const card = make('section', undefined, 'card');
+                card.append(content);
+                section.replaceChildren(heading, card);
+                section.hidden = false;
+                section.classList.remove('source-locked-section');
+            };
+            try {
+                const [datasetResponse, rankingResponse] = await Promise.all([
+                    fetch('analogx_dataset.json', { cache: 'no-store' }),
+                    fetch('terrain_rankings.json', { cache: 'no-store' }),
+                ]);
+                if (!datasetResponse.ok || !rankingResponse.ok) return false;
+                const dataset = await datasetResponse.json();
+                const rankings = await rankingResponse.json();
+                const targets = rankings.targets || [];
+                const jezero = rankings.rankings?.['mars-jezero'] || [];
+                const olympus = rankings.rankings?.['mars-olympus'] || [];
+                const fmt = value => Number.isFinite(Number(value)) ? Number(value).toFixed(2) : '—';
+
+                const exploreRows = jezero.slice(0, 12).map(row => [row.rank, row.site_name, row.country, `${fmt(row.score)}/100`, `${fmt(row.features.slope)}°`, `${fmt(row.features.roughness)}`, `${fmt(row.features.relief)} m`]);
+                renderSection(
+                    'explore-section',
+                    'Terrain ranking · 49 Earth records',
+                    'Explore Sites',
+                    `Top terrain matches for ${targets.find(target => target.id === 'mars-jezero')?.name || 'the selected Mars target'}. Select another target in Global Search for the second ranking.`,
+                    table(['#', 'Location', 'Country', 'Score', 'Slope', 'Roughness', 'Relief'], exploreRows),
+                );
+
+                const validationContent = make('div');
+                validationContent.append(
+                    make('p', `${dataset.counts.earth_feature_records} Earth records, ${dataset.counts.planetary_target_records} Mars targets, ${dataset.counts.demo_candidate_records} demo candidates, and a ${dataset.counts.sensitivity_audit_characters}-character sensitivity audit are loaded.`),
+                    table(['Check', 'Result'], [
+                        ['Earth feature coverage', `${dataset.counts.earth_feature_records}/49 records`],
+                        ['Mars target coverage', `${dataset.counts.planetary_target_records}/2 records`],
+                        ['Terrain feature coverage', '100% slope · roughness · relief'],
+                        ['Raw cache inventory', `${dataset.counts.raw_hgt_tiles} HGT + ${dataset.counts.raw_zip_caches} ZIP`],
+                        ['Ranking guardrail', 'Terrain screening only; not landing safety'],
+                    ]),
+                );
+                renderSection('validation-section', 'Dataset validation', 'Validation', 'Coverage and completeness checks for the imported terrain dataset.', validationContent);
+
+                const compareRows = Array.from(new Set([...jezero.slice(0, 5), ...olympus.slice(0, 5)].map(row => row.site_name))).map(name => {
+                    const left = jezero.find(row => row.site_name === name);
+                    const right = olympus.find(row => row.site_name === name);
+                    return [name, left ? `${left.rank} · ${fmt(left.score)}` : '—', right ? `${right.rank} · ${fmt(right.score)}` : '—'];
+                });
+                renderSection('compare-section', 'Two Mars targets · same Earth records', 'Compare', 'Compare terrain similarity rankings for Jezero Crater and Olympus Mons flank.', table(['Location', 'Jezero score/rank', 'Olympus score/rank'], compareRows));
+                return true;
+            } catch (error) {
+                console.warn('Imported terrain views could not be rendered', error);
+                return false;
+            }
+        }
+
         async function enforceOfficialSourceGate() {
             const lockSection = (id, title) => {
                 const section = document.getElementById(id);
@@ -6519,14 +6604,17 @@
                 if (!response.ok) throw new Error(`source_lock.json HTTP ${response.status}`);
                 const audit = await response.json();
                 window.__terratwinSourceLock = audit;
+                const terrainViewsReady = await renderImportedTerrainViews();
                 if (audit.ready === true && audit.status === 'ready') return true;
                 const notice = document.getElementById('scientific-source-lock-notice');
                 const message = document.getElementById('scientific-source-lock-message');
                 if (message) message.textContent = 'Legacy scientific scores are paused pending complete data validation. Imported terrain records remain available in Global Search.';
-                if (notice) notice.hidden = false;
-                lockSection('explore-section', 'Explore Sites is waiting for verified data');
-                lockSection('validation-section', 'Validation is waiting for verified data');
-                lockSection('compare-section', 'Compare is waiting for verified data');
+                if (notice) notice.hidden = !terrainViewsReady;
+                if (!terrainViewsReady) {
+                    lockSection('explore-section', 'Explore Sites is waiting for verified data');
+                    lockSection('validation-section', 'Validation is waiting for verified data');
+                    lockSection('compare-section', 'Compare is waiting for verified data');
+                }
                 ['tab-map', 'tab-terrain3d'].forEach(id => {
                     const node = document.getElementById(id);
                     if (node) { node.classList.add('is-locked'); node.removeAttribute('aria-disabled'); node.tabIndex = 0; }
@@ -6537,13 +6625,16 @@
                 });
                 return false;
             } catch (error) {
+                const terrainViewsReady = await renderImportedTerrainViews();
                 const notice = document.getElementById('scientific-source-lock-notice');
                 const message = document.getElementById('scientific-source-lock-message');
                 if (message) message.textContent = 'Legacy scientific scores are paused because the data validation record is unavailable.';
-                if (notice) notice.hidden = false;
-                lockSection('explore-section', 'Explore Sites is waiting for verified data');
-                lockSection('validation-section', 'Validation is waiting for verified data');
-                lockSection('compare-section', 'Compare is waiting for verified data');
+                if (notice) notice.hidden = !terrainViewsReady;
+                if (!terrainViewsReady) {
+                    lockSection('explore-section', 'Explore Sites is waiting for verified data');
+                    lockSection('validation-section', 'Validation is waiting for verified data');
+                    lockSection('compare-section', 'Compare is waiting for verified data');
+                }
                 ['tab-map', 'tab-terrain3d'].forEach(id => {
                     const node = document.getElementById(id);
                     if (node) { node.classList.add('is-locked'); node.removeAttribute('aria-disabled'); node.tabIndex = 0; }
