@@ -6275,80 +6275,97 @@
         }
 
         // SWITCH TARGET
-        function switchTarget(target) {
-            if (!['earth', 'moon', 'mars'].includes(target)) return;
-            const targetChanged = currentView !== target;
-            if (targetChanged) siteNavigationInFlight = false;
-            const sortControl = document.getElementById('leaderboard-sort');
-            if (sortControl && currentView !== target) {
-                if (target === 'earth') sortControl.dataset.previousPlanetSort = sortControl.value;
-                else if (currentView === 'earth') sortControl.value = sortControl.dataset.previousPlanetSort || 'score';
-            }
-            currentView = target;
-            if (target !== 'earth') currentTarget = target;
-            if (target !== 'earth') detailedMapMode = false;
-            if (targetChanged && target === 'earth') {
-                selectedTargetSiteId = null;
-                selectedSite = getRankedVisibleSites()[0] || selectedSite;
-            } else if (targetChanged) {
-                selectedTargetSiteId = targetSiteCatalog?.target_sites.find(site => site.body.toLowerCase() === target)?.id || null;
-            }
-            if (cesiumViewer && cesiumActiveBody !== target) {
-                switchCesiumBody(target, true).catch(error => {
-                    if (cesiumActiveBody !== target) return;
-                    console.error(`${PLANETARY_SURFACES[target]?.name || 'Earth'} surface switch failed:`, error);
-                    if (target === 'earth') {
-                        setMapNotice('Earth imagery initialization failed. The Earth ellipsoid remains available; try switching to Blue Marble + OSM.', true);
-                    } else {
-                        cesiumPlanetLayerErrors.add(target);
-                        updateCesiumMapState();
-                    }
-                });
-            }
-            else if (earthRenderer) switchThreePlanetGlobe(target, true);
-            else if (!cesiumViewer) fallbackToLeaflet(target === 'earth'
-                ? 'Cesium is unavailable; loading the local interactive Earth globe.'
-                : `Cesium is unavailable; loading the local ${PLANETARY_SURFACES[target].name} globe.`);
-            updateDetailedMapControls();
+        function syncTargetSelector(target) {
             ['earth', 'moon', 'mars'].forEach(planet => {
                 const button = document.getElementById(`btn-target-${planet}`);
+                if (!button) return;
                 button.classList.toggle('active', target === planet);
                 button.setAttribute('aria-pressed', String(target === planet));
             });
+        }
 
-            const badge = document.getElementById('target-badge');
-            if (badge) {
-                badge.innerText = target === 'earth'
-                    ? 'Earth · Candidate network'
-                    : target === 'moon'
-                        ? 'Target · Lunar south pole'
-                        : 'Target · Mars Jezero crater';
-            }
+        function switchTarget(target) {
+            if (!['earth', 'moon', 'mars'].includes(target)) return false;
+            const previousView = currentView;
+            const targetChanged = previousView !== target;
+            if (targetChanged) siteNavigationInFlight = false;
 
-            if (target !== 'earth') {
-                document.getElementById('badge-3d-target').innerText = target === 'moon'
-                    ? 'Planetary Target: Lunar South Pole (Shackleton)'
-                    : 'Planetary Target: Mars Jezero Crater';
-            }
+            // Commit the visible state before any renderer, network, or catalogue work.
+            // A failed optional surface load must never make the selector look stuck.
+            currentView = target;
+            if (target !== 'earth') currentTarget = target;
+            if (target !== 'earth') detailedMapMode = false;
+            syncTargetSelector(target);
+            updatePlanetaryNavigatorState(target);
 
-            if (target !== 'earth') {
-                const legacySites = analogSites.filter(site => !site.id.startsWith('terrain-'));
-                selectedSite = target === 'moon' ? legacySites[0] : legacySites[2] || legacySites[0] || selectedSite;
-            }
-
-            renderMapMarkers();
-            updateLeaderboards();
-            selectSite(selectedSite);
-            if (target !== 'earth') {
-                generate3DTargetMesh(target);
-            }
-            if (targetChanged) {
-                const exploreSection = document.getElementById('explore-section');
-                if (exploreSection) {
-                    switchTab('map-tab', 'tab-map');
-                    requestAnimationFrame(() => exploreSection.scrollIntoView({ behavior: 'smooth', block: 'start' }));
+            try {
+                const sortControl = document.getElementById('leaderboard-sort');
+                if (sortControl && targetChanged) {
+                    if (target === 'earth') sortControl.dataset.previousPlanetSort = sortControl.value;
+                    else if (previousView === 'earth') sortControl.value = sortControl.dataset.previousPlanetSort || 'score';
                 }
+                if (targetChanged && target === 'earth') {
+                    selectedTargetSiteId = null;
+                    selectedSite = getRankedVisibleSites()[0] || selectedSite;
+                } else if (targetChanged) {
+                    selectedTargetSiteId = targetSiteCatalog?.target_sites?.find(site => site.body.toLowerCase() === target)?.id || null;
+                }
+                if (cesiumViewer && cesiumActiveBody !== target) {
+                    switchCesiumBody(target, true).catch(error => {
+                        if (cesiumActiveBody !== target) return;
+                        console.error(`${PLANETARY_SURFACES[target]?.name || 'Earth'} surface switch failed:`, error);
+                        if (target === 'earth') {
+                            setMapNotice('Earth imagery initialization failed. The Earth ellipsoid remains available; try switching to Blue Marble + OSM.', true);
+                        } else {
+                            cesiumPlanetLayerErrors.add(target);
+                            updateCesiumMapState();
+                        }
+                    });
+                } else if (earthRenderer) {
+                    switchThreePlanetGlobe(target, true);
+                } else if (!cesiumViewer) {
+                    fallbackToLeaflet(target === 'earth'
+                        ? 'Cesium is unavailable; loading the local interactive Earth globe.'
+                        : `Cesium is unavailable; loading the local ${PLANETARY_SURFACES[target].name} globe.`);
+                }
+                updateDetailedMapControls();
+
+                const badge = document.getElementById('target-badge');
+                if (badge) {
+                    badge.innerText = target === 'earth'
+                        ? 'Earth · Candidate network'
+                        : target === 'moon'
+                            ? 'Target · Lunar south pole'
+                            : 'Target · Mars Jezero crater';
+                }
+
+                if (target !== 'earth') {
+                    const targetBadge = document.getElementById('badge-3d-target');
+                    if (targetBadge) targetBadge.innerText = target === 'moon'
+                        ? 'Planetary Target: Lunar South Pole (Shackleton)'
+                        : 'Planetary Target: Mars Jezero Crater';
+                    const legacySites = analogSites.filter(site => !site.id.startsWith('terrain-'));
+                    selectedSite = target === 'moon' ? legacySites[0] : legacySites[2] || legacySites[0] || selectedSite;
+                }
+
+                renderMapMarkers();
+                updateLeaderboards();
+                selectSite(selectedSite);
+                if (target !== 'earth') generate3DTargetMesh(target);
+                if (targetChanged) {
+                    const exploreSection = document.getElementById('explore-section');
+                    if (exploreSection) {
+                        switchTab('map-tab', 'tab-map');
+                        requestAnimationFrame(() => exploreSection.scrollIntoView({ behavior: 'smooth', block: 'start' }));
+                    }
+                }
+            } catch (error) {
+                console.error(`${PLANETARY_SURFACES[target]?.name || target} selector update failed:`, error);
+                updatePlanetaryNavigatorState(target);
+                updateDetailedMapControls();
+                setMapNotice(`${PLANETARY_SURFACES[target]?.name || target} selected. Some optional data could not be rendered.`, true);
             }
+            return true;
         }
 
         function toggleMobileSidebar() {
