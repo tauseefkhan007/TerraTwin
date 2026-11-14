@@ -77,7 +77,7 @@
         const audit = state.sourceLock || {
             ready: false,
             status: 'blocked_missing_audit',
-            message: 'The source-lock audit could not be loaded, so numeric results remain hidden.',
+            message: 'Legacy ranking validation could not be loaded, so legacy scores remain paused.',
             approved_resources: [], exact_products: {}, blocked_sources: [], missing_provenance: [],
         };
         const root = $('gs-source-lock');
@@ -86,9 +86,11 @@
         root.classList.toggle('is-ready', sourceLockReady());
         $('gs-source-lock-badge').textContent = sourceLockReady() ? 'LEGACY RANKING READY' : 'LEGACY RANKING LOCKED';
         $('gs-source-lock-heading').textContent = sourceLockReady()
-            ? 'Official Resources-tab source lock passed'
-            : 'Official Resources-tab source lock is blocking the ranking';
-        $('gs-source-lock-message').textContent = audit.message;
+            ? 'Legacy ranking validation passed'
+            : 'Legacy ranking validation is paused';
+        $('gs-source-lock-message').textContent = sourceLockReady()
+            ? audit.message
+            : 'Imported terrain records are available above. The inherited multi-modal ranking remains paused until its inputs are reprocessed with complete provenance.';
         const blocked = audit.blocked_sources?.length || 0;
         const missing = audit.missing_provenance?.length || 0;
         $('gs-source-lock-detail').textContent = sourceLockReady()

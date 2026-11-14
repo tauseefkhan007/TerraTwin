@@ -6494,11 +6494,11 @@
                 panel.className = 'source-locked-placeholder';
                 const eyebrow = document.createElement('span');
                 eyebrow.className = 'eyebrow';
-                eyebrow.textContent = 'Official source lock required';
+                eyebrow.textContent = 'Legacy scores paused';
                 const heading = document.createElement('h2');
                 heading.textContent = title;
                 const copy = document.createElement('p');
-                copy.textContent = 'This workspace is available, but its scientific outputs are paused until every input is re-ingested from the approved NASA Space Apps Resources-tab sources with complete provenance.';
+                copy.textContent = 'The imported terrain dataset is available in Global Search. Legacy multi-modal scores are paused until their inputs are reprocessed with complete provenance.';
                 const link = document.createElement('a');
                 link.href = 'https://www.spaceappschallenge.org/2026/challenges/permanent-moon-base-locations-and-mars/?tab=resources';
                 link.target = '_blank';
@@ -6517,7 +6517,7 @@
                 if (audit.ready === true && audit.status === 'ready') return true;
                 const notice = document.getElementById('scientific-source-lock-notice');
                 const message = document.getElementById('scientific-source-lock-message');
-                if (message) message.textContent = audit.message || 'Unverified scientific outputs are hidden until the official Resources-tab audit passes.';
+                if (message) message.textContent = 'Legacy scientific scores are paused pending complete data validation. Imported terrain records remain available in Global Search.';
                 if (notice) notice.hidden = false;
                 lockSection('explore-section', 'Explore Sites is waiting for verified data');
                 lockSection('validation-section', 'Validation is waiting for verified data');
@@ -6535,7 +6535,7 @@
             } catch (error) {
                 const notice = document.getElementById('scientific-source-lock-notice');
                 const message = document.getElementById('scientific-source-lock-message');
-                if (message) message.textContent = 'The source-lock audit is unavailable; scientific outputs remain hidden for safety.';
+                if (message) message.textContent = 'Legacy scientific scores are paused because the data validation record is unavailable.';
                 if (notice) notice.hidden = false;
                 lockSection('explore-section', 'Explore Sites is waiting for verified data');
                 lockSection('validation-section', 'Validation is waiting for verified data');
