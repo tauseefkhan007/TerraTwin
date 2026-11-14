@@ -20,10 +20,7 @@
     const mission = document.getElementById('tt-intro-mission');
 
     const CTA_AT = 0.86;      // scroll progress at which the call to action appears
-    const EASE = 0.28;        // faster catch-up keeps the scroll response close to 60/65 Hz
-    const SCROLL_IDLE_DELAY = 90;
-    const SEEK_THRESHOLD = 0.025;
-    const FAST_SEEK_THRESHOLD = 0.75;
+    const EASE = 0.16;        // smoothing between scroll position and video time
     const reducedMotion = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 
     let duration = 0;
@@ -34,7 +31,6 @@
     let ready = false;
     let failed = false;
     let primed = false;
-    let scrollIdleTimer = 0;
 
     function pickSource() {
         return 'assets/video/naksh-intro-scrub.mp4';
@@ -84,31 +80,9 @@
         if (!ready || !duration) return;
         // Stay just inside the last frame so the video never flips to its ended state.
         wantedTime = Math.min(duration - 0.04, Math.max(0, current * duration));
-        const distance = Math.abs(video.currentTime - wantedTime);
-        if (video.seeking || distance <= SEEK_THRESHOLD) return;
-        if (distance >= FAST_SEEK_THRESHOLD && typeof video.fastSeek === 'function') {
-            video.fastSeek(wantedTime);
-        } else {
+        if (!video.seeking && Math.abs(video.currentTime - wantedTime) > 0.012) {
             video.currentTime = wantedTime;
         }
-    }
-
-    function pausePlayback() {
-        if (!video.paused) video.pause();
-        video.playbackRate = 1;
-    }
-
-    function freezeAfterScroll() {
-        if (scrollIdleTimer) window.clearTimeout(scrollIdleTimer);
-        scrollIdleTimer = window.setTimeout(function () {
-            scrollIdleTimer = 0;
-            if (raf) {
-                window.cancelAnimationFrame(raf);
-                raf = 0;
-            }
-            target = current;
-            paintUi();
-        }, SCROLL_IDLE_DELAY);
     }
 
     function paintUi() {
@@ -127,11 +101,9 @@
 
     function onScroll() {
         if (failed || reducedMotion) return;
-        pausePlayback();
         target = scrollProgress();
         paintUi();
         if (!raf) raf = window.requestAnimationFrame(tick);
-        freezeAfterScroll();
     }
 
     // iOS/Safari only let a video seek reliably after a user gesture has "touched" it.
@@ -153,8 +125,6 @@
         if (!isFinite(duration) || duration <= 0) { fail('invalid duration'); return; }
         ready = true;
         video.pause();
-        video.defaultPlaybackRate = 1;
-        video.playbackRate = 1;
         if (reducedMotion) {
             // No scrubbing: show the closing frame and the call to action immediately.
             landing.classList.add('tt-intro-static');
@@ -178,22 +148,8 @@
     video.addEventListener('loadeddata', function () { updateLoadProgress(); showEndFrame(); window.setTimeout(hideLoader, 2500); });
     video.addEventListener('canplay', showEndFrame);
     video.addEventListener('canplaythrough', hideLoader);
-    video.addEventListener('timeupdate', function () {
-        if (video.paused || failed || reducedMotion || !duration) return;
-        target = Math.min(1, Math.max(0, video.currentTime / duration));
-        current = target;
-        wantedTime = video.currentTime;
-        paintUi();
-    });
-    video.addEventListener('ended', function () {
-        video.pause();
-        video.playbackRate = 1;
-        target = 1;
-        current = 1;
-        paintUi();
-    });
     video.addEventListener('seeked', function () {
-        if (Math.abs(video.currentTime - wantedTime) > SEEK_THRESHOLD) applyFrame();
+        if (Math.abs(video.currentTime - wantedTime) > 0.012) applyFrame();
     });
     video.addEventListener('error', function () { fail(); });
 
@@ -205,7 +161,6 @@
 
     if (missionBtn && mission) {
         missionBtn.addEventListener('click', function () {
-            prime();
             landing.scrollTo({ top: mission.offsetTop, behavior: reducedMotion ? 'auto' : 'smooth' });
         });
     }
@@ -213,11 +168,6 @@
     // When the landing is shown again (log out) restart from the beginning of the journey.
     new MutationObserver(function () {
         if (!landing.hidden) {
-            pausePlayback();
-            if (scrollIdleTimer) {
-                window.clearTimeout(scrollIdleTimer);
-                scrollIdleTimer = 0;
-            }
             landing.scrollTop = 0;
             target = 0;
             current = 0;
