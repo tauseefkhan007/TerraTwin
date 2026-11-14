@@ -1535,7 +1535,6 @@
         .footer-tagline { color: #67cfe9; font-family: 'Space Grotesk', sans-serif; font-size: 0.68rem; }
         main { padding-bottom: 7px; }
         footer { min-height: 23px; padding: 3px 12px; }
-        #about-tab .card { max-width: 1000px; }
 
         /* PTAE reference shell */
         :root {
@@ -2442,7 +2441,6 @@
             <a href="#explore-section" class="tab-btn" id="tab-map" data-section="explore-section" data-pane="map-tab" role="tab" aria-selected="false" aria-controls="explore-section" onclick="navigateToDashboardSection('explore-section','map-tab','tab-map'); return false;" title="Explore candidate sites"><svg class="nav-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M20 10c0 5-8 12-8 12S4 15 4 10a8 8 0 1 1 16 0Z"/><circle cx="12" cy="10" r="2.5"/></svg><span>Explore Sites</span></a>
             <a href="#compare-section" class="tab-btn" id="tab-terrain3d" data-section="compare-section" data-pane="terrain3d-tab" role="tab" aria-selected="false" aria-controls="compare-section" onclick="navigateToDashboardSection('compare-section','terrain3d-tab','tab-terrain3d'); return false;" title="Compare locations"><svg class="nav-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="m3 19 6-10 4 6 3-4 5 8H3Z"/><path d="m8 11 1 2 2-1"/></svg><span>Compare</span></a>
             <a href="#science-section" class="tab-btn" id="tab-data" data-section="science-section" data-pane="data-tab" role="tab" aria-selected="false" aria-controls="science-section" onclick="navigateToDashboardSection('science-section','data-tab','tab-data'); return false;" title="Science and data"><svg class="nav-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 5c0-1.1 3.6-2 8-2s8 .9 8 2-3.6 2-8 2-8-.9-8-2Z"/><path d="M4 5v7c0 1.1 3.6 2 8 2s8-.9 8-2V5M4 12v7c0 1.1 3.6 2 8 2s8-.9 8-2v-7"/></svg><span>Science &amp; Data</span></a>
-            <a href="#about-section" class="tab-btn" id="tab-about" data-section="about-section" data-pane="about-tab" role="tab" aria-selected="false" aria-controls="about-section" onclick="navigateToDashboardSection('about-section','about-tab','tab-about'); return false;" title="About TerraTwin"><svg class="nav-icon" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M12 11v5M12 8h.01"/></svg><span>About TerraTwin</span></a>
         </nav>
         <blockquote class="sidebar-quote">“From Earth evidence to planetary mission readiness.”<cite>TerraTwin project tagline</cite></blockquote>
         <div class="sidebar-status" role="status"><strong>Evidence-first prototype</strong><span>Official challenge source lock in progress<br>Measured data stays separate from priors</span></div>
@@ -3086,19 +3084,6 @@
             </div>
         </div>
 
-        <div class="tab-pane" id="about-tab" role="tabpanel" aria-labelledby="tab-about">
-            <section class="content-section" id="about-section" aria-labelledby="about-heading">
-                <div class="section-heading"><div><span class="eyebrow">Mission-specific analog discovery</span><h2 id="about-heading">About TerraTwin</h2></div><p>Project scope, prototype behavior, and intended use.</p></div>
-            <div class="card">
-                <div class="card-header"><div><span class="eyebrow">Current project</span><h3>Planetary Terrestrial Analog Engine</h3></div><span class="target-label">NASA Space Apps Challenge 2026</span></div>
-                <p class="science-note">TerraTwin explores how terrestrial terrain signatures can be compared with lunar and Martian targets. This MVP preserves an inherited, MIT-licensed scoring base while the team replaces its data adapters with the official NASA Space Apps 2026 Resources-tab sources.</p>
-                <div class="card-header"><div><span class="eyebrow">Current prototype scope</span><h2>Data and method</h2></div></div>
-                <p class="provenance-note">The Python pipeline calculates terrain metrics and ranks candidate signatures. The dashboard reads the generated target JSON files and separate window-sensitivity validation JSON. Map imagery has separate provider attribution and is not live telemetry.</p>
-                <a class="catalog-link" href="#compare-section" onclick="navigateToDashboardSection('compare-section','terrain3d-tab','tab-terrain3d'); return false;">Open comparison tools</a>
-            </div>
-            </section>
-        </div>
-
     </main>
 
     <!-- FOOTER -->
@@ -3657,7 +3642,6 @@
                 ['validation-section', 'tab-map'],
                 ['compare-section', 'tab-terrain3d'],
                 ['science-section', 'tab-data'],
-                ['about-section', 'tab-about'],
             ]);
             let updatePending = false;
             const updateActiveSection = () => {
