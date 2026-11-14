@@ -2222,9 +2222,11 @@
         .tt-intro-brand { display: grid; gap: 3px; padding: 0; border: 0; border-radius: 0; background: transparent; }
         .tt-intro-brand strong { color: #f7fbff; font-family: 'Space Grotesk', sans-serif; font-size: .9rem; letter-spacing: .24em; }
         .tt-intro-brand small { color: rgba(226, 237, 248, .76); font-size: .56rem; font-weight: 700; letter-spacing: .12em; text-transform: uppercase; }
-        .tt-intro-skip { flex: 0 0 auto; white-space: nowrap; min-height: 42px; padding: 8px 17px; border: 1px solid rgba(241, 245, 252, .28); border-radius: 999px; background: rgba(7, 11, 22, .38); color: #f1f5fc; font-size: .7rem; font-weight: 700; letter-spacing: .08em; text-transform: uppercase; cursor: pointer; backdrop-filter: blur(12px); transition: background 180ms ease, border-color 180ms ease, transform 180ms ease; }
+        .tt-intro-skip { flex: 0 0 auto; white-space: nowrap; min-height: 42px; padding: 8px 2px; border: 0; border-radius: 0; background: transparent; color: #f1f5fc; font-size: .7rem; font-weight: 700; letter-spacing: .08em; text-transform: uppercase; cursor: pointer; transition: color 180ms ease, transform 180ms ease; }
+        .tt-intro-skip::after { content: '→'; display: inline-block; margin-left: .55rem; font-size: 1.15em; transition: transform 180ms ease; }
         .tt-intro-skip:hover, .tt-intro-btn:hover { transform: translateY(-1px); }
-        .tt-intro-skip:hover { background: rgba(7, 11, 22, .72); border-color: rgba(241, 245, 252, .58); }
+        .tt-intro-skip:hover { color: #9be9fa; }
+        .tt-intro-skip:hover::after { transform: translateX(3px); }
         .tt-intro-skip:focus-visible, .tt-intro-btn:focus-visible { outline: 2px solid var(--focus-ring); outline-offset: 3px; }
         .tt-intro-hint { position: absolute; left: 50%; bottom: max(26px, env(safe-area-inset-bottom)); z-index: 3; display: flex; flex-direction: column; align-items: center; gap: 8px; color: #dbe8f4; font-size: .68rem; font-weight: 700; letter-spacing: .22em; text-transform: uppercase; transform: translateX(-50%); transition: opacity 200ms ease; pointer-events: none; }
         .tt-intro-hint i { display: block; width: 1px; height: 38px; background: linear-gradient(to bottom, #56d9f5, transparent); animation: tt-hint 1.8s ease-in-out infinite; transform-origin: top; }
@@ -2255,7 +2257,7 @@
             .tt-intro-brand { gap: 2px; padding: 0; }
             .tt-intro-brand strong { font-size: .8rem; }
             .tt-intro-brand small { font-size: .48rem; }
-            .tt-intro-skip { min-height: 38px; padding-inline: 13px; font-size: .63rem; }
+            .tt-intro-skip { min-height: 38px; padding-inline: 2px; font-size: .63rem; }
             .tt-intro-cta { bottom: max(18px, env(safe-area-inset-bottom)); gap: 10px; width: calc(100vw - 28px); padding: 15px 13px; border-radius: 16px; }
             .tt-intro-cta-row { gap: 8px; }
             .tt-intro-btn { min-height: 42px; padding: 9px 14px; font-size: .61rem; letter-spacing: .06em; }
