@@ -2157,6 +2157,75 @@
             .tt-orbit.mars { animation: none; transform: translate(-50%, -50%); transition: none; }
         }
 
+        /* Full-screen landing and authentication gate */
+        .terratwin-landing[hidden],
+        .terratwin-auth[hidden] { display: none !important; }
+        .terratwin-landing {
+            position: fixed;
+            z-index: 5000;
+            inset: 0;
+            display: grid;
+            place-items: center;
+            overflow: hidden;
+            background: radial-gradient(circle at 50% 45%, rgba(22, 75, 112, .34), transparent 36%), linear-gradient(135deg, #020712 0%, #07182b 52%, #100d1d 100%);
+            cursor: pointer;
+            touch-action: manipulation;
+        }
+        .terratwin-landing::before,
+        .terratwin-landing::after { position: absolute; inset: 0; content: ''; pointer-events: none; }
+        .terratwin-landing::before { opacity: .55; background-image: radial-gradient(circle at 10% 22%, #dffaff 0 1px, transparent 1.5px), radial-gradient(circle at 78% 18%, #dffaff 0 1px, transparent 1.4px), radial-gradient(circle at 43% 74%, #dffaff 0 1px, transparent 1.6px), radial-gradient(circle at 90% 78%, #ffd2ae 0 1px, transparent 1.5px); background-size: 230px 190px, 310px 250px, 270px 220px, 360px 280px; animation: tt-stars-drift 22s linear infinite; }
+        .terratwin-landing::after { background: linear-gradient(90deg, transparent, rgba(104, 215, 238, .08), transparent); transform: skewX(-18deg) translateX(-120%); animation: tt-light-sweep 10s ease-in-out infinite; }
+        .terratwin-landing-inner { position: relative; z-index: 1; display: grid; grid-template-rows: auto minmax(0, 1fr) auto; align-items: center; width: min(100%, 1180px); height: 100%; padding: clamp(24px, 5vw, 66px); text-align: center; }
+        .terratwin-landing-kicker { color: var(--accent-cyan); font-size: clamp(.65rem, 1.2vw, .82rem); font-weight: 800; letter-spacing: .2em; text-transform: uppercase; }
+        .terratwin-landing-title { margin-top: 12px; color: #f4fbff; font-family: 'Space Grotesk', sans-serif; font-size: clamp(2.7rem, 8vw, 7rem); line-height: .9; letter-spacing: -.08em; text-shadow: 0 0 38px rgba(104, 215, 238, .22); }
+        .terratwin-landing-subtitle { max-width: 680px; margin: 18px auto 0; color: #b9cddd; font-size: clamp(.84rem, 1.7vw, 1.05rem); line-height: 1.55; }
+        .terratwin-landing-scene { position: relative; width: min(84vw, 650px); height: min(58vh, 520px); min-height: 300px; margin: auto; }
+        .landing-orbit { position: absolute; left: 50%; top: 50%; border: 1px solid rgba(104, 215, 238, .4); border-radius: 50%; transform: translate(-50%, -50%); }
+        .landing-orbit.moon { width: 43%; height: 43%; animation: landing-orbit-moon 11s linear infinite; }
+        .landing-orbit.mars { width: 76%; height: 55%; border-color: rgba(240, 160, 103, .38); transform: translate(-50%, -50%) rotate(-22deg); animation: landing-orbit-mars 19s linear infinite; }
+        .landing-world { position: absolute; border-radius: 50%; box-shadow: 0 0 34px currentColor; }
+        .landing-world.earth { left: 50%; top: 50%; width: clamp(116px, 20vw, 178px); height: clamp(116px, 20vw, 178px); color: rgba(104, 215, 238, .7); background: radial-gradient(circle at 31% 25%, #d8fbff 0 5%, #369ed1 31%, #13537f 68%, #06172d 100%); transform: translate(-50%, -50%); }
+        .landing-world.earth::after { position: absolute; inset: 24% 28% 29% 14%; border-radius: 58% 35% 55% 40%; background: #83bd86; content: ''; opacity: .84; transform: rotate(-18deg); }
+        .landing-world.moon { top: 0; left: 50%; width: clamp(32px, 5vw, 52px); height: clamp(32px, 5vw, 52px); color: rgba(230, 240, 245, .55); background: radial-gradient(circle at 31% 25%, #fff, #a7b6be 63%, #52616f); transform: translate(-50%, -50%); }
+        .landing-world.mars { top: 50%; right: 0; width: clamp(42px, 6vw, 64px); height: clamp(42px, 6vw, 64px); color: rgba(240, 160, 103, .7); background: radial-gradient(circle at 31% 25%, #ffd4ab, #c56852 60%, #71363a); transform: translate(50%, -50%); }
+        .landing-label { position: absolute; z-index: 3; padding: 5px 10px; border: 1px solid rgba(150, 224, 241, .38); border-radius: 999px; background: rgba(3, 13, 27, .82); color: #f2fbff; font-size: clamp(.62rem, 1.2vw, .78rem); font-weight: 800; letter-spacing: .14em; text-transform: uppercase; white-space: nowrap; }
+        .landing-label.earth { left: 50%; bottom: 10%; transform: translateX(-50%); }
+        .landing-label.moon { left: 70%; top: 23%; color: #e6eef2; }
+        .landing-label.mars { right: 4%; top: 43%; color: #ffd1b4; border-color: rgba(240, 160, 103, .46); }
+        .terratwin-landing-prompt { display: inline-flex; align-items: center; justify-content: center; gap: 9px; min-height: 46px; padding: 11px 21px; border: 1px solid rgba(104, 215, 238, .7); border-radius: 999px; background: rgba(8, 36, 58, .82); box-shadow: 0 0 24px rgba(104, 215, 238, .14); color: #effcff; font-size: .76rem; font-weight: 800; letter-spacing: .08em; text-transform: uppercase; }
+        .terratwin-landing-prompt::before { width: 8px; height: 8px; border-radius: 50%; background: var(--accent-cyan); box-shadow: 0 0 12px var(--accent-cyan); content: ''; animation: tt-pulse 1.7s ease-in-out infinite; }
+        .terratwin-auth { position: fixed; z-index: 5100; inset: 0; display: grid; place-items: center; padding: 20px; background: rgba(1, 7, 17, .78); backdrop-filter: blur(12px); }
+        .terratwin-auth-card { position: relative; width: min(100%, 440px); padding: clamp(25px, 5vw, 42px); border: 1px solid rgba(104, 215, 238, .45); border-radius: 22px; background: linear-gradient(145deg, rgba(10, 33, 56, .98), rgba(4, 13, 27, .98)); box-shadow: 0 30px 100px rgba(0, 0, 0, .52); }
+        .terratwin-auth-card h2 { margin: 9px 0 10px; color: #f1fbff; font-size: clamp(1.6rem, 5vw, 2.2rem); }
+        .terratwin-auth-card p { color: var(--text-dim); font-size: .8rem; line-height: 1.55; }
+        .terratwin-auth-eyebrow { color: var(--accent-cyan); font-size: .65rem; font-weight: 800; letter-spacing: .16em; text-transform: uppercase; }
+        .terratwin-auth-close { position: absolute; top: 12px; right: 14px; width: 34px; height: 34px; border: 1px solid var(--border-glow); border-radius: 50%; background: transparent; color: var(--text-main); font-size: 1.2rem; cursor: pointer; }
+        .terratwin-auth-options { display: grid; gap: 9px; margin-top: 22px; }
+        .terratwin-auth-button { min-height: 44px; padding: 9px 14px; border: 1px solid rgba(104, 215, 238, .5); border-radius: 10px; background: #0b2943; color: #effcff; cursor: pointer; font-weight: 750; }
+        .terratwin-auth-button.primary { border-color: var(--accent-cyan); background: var(--accent-cyan); color: #061522; }
+        .terratwin-auth-button:hover { transform: translateY(-1px); box-shadow: 0 8px 18px rgba(104, 215, 238, .16); }
+        .terratwin-auth-note { margin-top: 15px; color: var(--text-faint) !important; font-size: .68rem !important; }
+        .terratwin-auth-status { min-height: 1.3em; margin-top: 12px; color: #ffd783 !important; font-size: .72rem !important; }
+        body.tt-landing-locked { overflow: hidden; }
+        @keyframes landing-orbit-moon { to { transform: translate(-50%, -50%) rotate(360deg); } }
+        @keyframes landing-orbit-mars { to { transform: translate(-50%, -50%) rotate(-382deg); } }
+        @keyframes tt-stars-drift { to { background-position: 230px 190px, -310px 250px, 270px -220px, -360px 280px; } }
+        @keyframes tt-light-sweep { 45%, 100% { transform: skewX(-18deg) translateX(120%); } }
+        @keyframes tt-pulse { 50% { transform: scale(1.5); opacity: .55; } }
+        @media (max-width: 700px) {
+            .terratwin-landing-inner { padding: 25px 18px 34px; }
+            .terratwin-landing-scene { width: 94vw; height: 48vh; min-height: 280px; }
+            .landing-label.moon { left: 68%; top: 19%; }
+            .landing-label.mars { right: 0; top: 42%; }
+        }
+        @media (prefers-reduced-motion: reduce) {
+            .terratwin-landing::before,
+            .terratwin-landing::after,
+            .landing-orbit.moon,
+            .landing-orbit.mars,
+            .terratwin-landing-prompt::before { animation: none; }
+        }
+
         .command-toolbar .target-pill { min-height: 56px; gap: 4px; padding: 6px; }
         .command-toolbar .target-pill .target-btn { gap: 10px; min-height: 56px; padding: 8px 18px 8px 10px; }
         .command-toolbar .planet-image { display: block; flex: 0 0 40px; flex-shrink: 0; width: 40px; height: 40px; border: 1px solid rgba(255, 255, 255, 0.25); border-radius: 50%; object-fit: cover; opacity: 0.85; transition: transform 200ms ease, box-shadow 200ms ease, opacity 200ms ease; }
@@ -2227,6 +2296,41 @@
     </style>
 </head>
 <body>
+
+    <section class="terratwin-landing" id="terratwin-landing" aria-labelledby="terratwin-landing-title">
+        <div class="terratwin-landing-inner">
+            <div>
+                <span class="terratwin-landing-kicker">NASA Space Apps Challenge 2026 · TerraTwin</span>
+                <h1 class="terratwin-landing-title" id="terratwin-landing-title">Earth, Moon, Mars.</h1>
+                <p class="terratwin-landing-subtitle">A traceable analog workspace for mission teams. Touch or click anywhere to enter the research console.</p>
+            </div>
+            <div class="terratwin-landing-scene" aria-label="Full-screen animated Earth, Moon and Mars system">
+                <span class="landing-orbit moon" aria-hidden="true"><span class="landing-world moon"></span></span>
+                <span class="landing-orbit mars" aria-hidden="true"><span class="landing-world mars"></span></span>
+                <span class="landing-world earth" aria-hidden="true"></span>
+                <span class="landing-label earth">Earth</span>
+                <span class="landing-label moon">Moon</span>
+                <span class="landing-label mars">Mars</span>
+            </div>
+            <div class="terratwin-landing-prompt">Touch / click to authenticate</div>
+        </div>
+    </section>
+
+    <section class="terratwin-auth" id="terratwin-auth" role="dialog" aria-modal="true" aria-labelledby="terratwin-auth-title" hidden>
+        <div class="terratwin-auth-card">
+            <button type="button" class="terratwin-auth-close" id="terratwin-auth-close" aria-label="Close authentication dialog">×</button>
+            <span class="terratwin-auth-eyebrow">Researcher access</span>
+            <h2 id="terratwin-auth-title">Enter TerraTwin</h2>
+            <p>Sign in to save mission profiles, compare field sites and return to your evidence reports.</p>
+            <div class="terratwin-auth-options">
+                <button type="button" class="terratwin-auth-button" id="terratwin-github-auth">Continue with GitHub</button>
+                <button type="button" class="terratwin-auth-button" id="terratwin-google-auth">Continue with Google</button>
+                <button type="button" class="terratwin-auth-button primary" id="terratwin-demo-auth">Enter demo workspace</button>
+            </div>
+            <p class="terratwin-auth-status" id="terratwin-auth-status" role="status" aria-live="polite"></p>
+            <p class="terratwin-auth-note">Demo access stays local to this browser. OAuth buttons are staged for the authenticated backend integration; no credentials are collected by this static MVP.</p>
+        </div>
+    </section>
 
     <!-- TOP BAR -->
     <header>
@@ -6161,5 +6265,6 @@
         });
     </script>
     <script src="global-search.js"></script>
+    <script src="landing-auth.js"></script>
 </body>
 </html>
