@@ -2219,7 +2219,7 @@
         .tt-intro-fallback { position: absolute; inset: 0; width: auto; height: auto; min-height: 0; margin: 0; background: radial-gradient(circle at 50% 45%, rgba(22, 75, 112, .34), transparent 36%), linear-gradient(135deg, #020712 0%, #07182b 52%, #100d1d 100%); }
         .tt-intro-fallback[hidden] { display: none; }
         .tt-intro-top { position: absolute; top: 0; left: 0; right: 0; z-index: 3; display: flex; align-items: center; justify-content: space-between; gap: 12px; padding: max(22px, env(safe-area-inset-top)) clamp(18px, 5vw, 64px) 0; }
-        .tt-intro-brand { display: grid; gap: 3px; padding: 10px 15px; border: 1px solid rgba(220, 240, 255, .16); border-radius: 13px; background: rgba(6, 12, 23, .32); backdrop-filter: blur(12px); }
+        .tt-intro-brand { display: grid; gap: 3px; padding: 0; border: 0; border-radius: 0; background: transparent; }
         .tt-intro-brand strong { color: #f7fbff; font-family: 'Space Grotesk', sans-serif; font-size: .9rem; letter-spacing: .24em; }
         .tt-intro-brand small { color: rgba(226, 237, 248, .76); font-size: .56rem; font-weight: 700; letter-spacing: .12em; text-transform: uppercase; }
         .tt-intro-skip { flex: 0 0 auto; white-space: nowrap; min-height: 42px; padding: 8px 17px; border: 1px solid rgba(241, 245, 252, .28); border-radius: 999px; background: rgba(7, 11, 22, .38); color: #f1f5fc; font-size: .7rem; font-weight: 700; letter-spacing: .08em; text-transform: uppercase; cursor: pointer; backdrop-filter: blur(12px); transition: background 180ms ease, border-color 180ms ease, transform 180ms ease; }
@@ -2252,7 +2252,7 @@
         .tt-intro-mission-grid p { color: #a1adc1; font-size: .86rem; line-height: 1.6; }
         @media (max-width: 560px) {
             .tt-intro-top { padding-inline: 14px; }
-            .tt-intro-brand { gap: 2px; padding: 8px 11px; }
+            .tt-intro-brand { gap: 2px; padding: 0; }
             .tt-intro-brand strong { font-size: .8rem; }
             .tt-intro-brand small { font-size: .48rem; }
             .tt-intro-skip { min-height: 38px; padding-inline: 13px; font-size: .63rem; }
