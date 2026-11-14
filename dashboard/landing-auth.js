@@ -13,7 +13,10 @@
     const status = document.getElementById('terratwin-auth-status');
     const workspace = document.getElementById('tab-home');
     const logoutButton = document.getElementById('terratwin-logout');
-    const apiBase = (window.TERRATWIN_API_BASE || 'http://localhost:8001').replace(/\/$/, '');
+    const defaultApiBase = window.location.hostname
+        ? `${window.location.protocol}//${window.location.hostname}:8001`
+        : 'http://localhost:8001';
+    const apiBase = (window.TERRATWIN_API_BASE || defaultApiBase).replace(/\/$/, '');
 
     function setStatus(message) {
         if (status) status.textContent = message;

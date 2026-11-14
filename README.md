@@ -74,6 +74,22 @@ python -m http.server --directory dashboard 8000    # open http://localhost:8000
 ```
 Open the **Global Search** tab, choose a Moon or Mars target, change the mission-priority sliders, and click any region.
 
+### Open the frontend on another laptop
+
+Run the frontend on the host laptop's network interface, then open the host laptop's LAN address from the second laptop. Find the address with `ipconfig getifaddr en0` on macOS (or your operating system's network settings).
+
+```bash
+python -m http.server --bind 0.0.0.0 --directory dashboard 8000
+```
+
+On the second laptop, open `http://<host-lan-ip>:8000/`. For demo access, the frontend is sufficient. If the second laptop must use the auth API too, run the API on the network interface and set `TERRATWIN_FRONTEND_URL` in `.env` to `http://<host-lan-ip>:8000`:
+
+```bash
+.venv/bin/uvicorn backend.app:app --host 0.0.0.0 --port 8001
+```
+
+The host and second laptop must be on the same network, and the host firewall must allow ports 8000 and 8001. Do not expose this development server to the public internet.
+
 ### Optional Google/GitHub sign-in
 
 The dashboard works in local demo mode without an auth service. To enable the two sign-in buttons, copy `.env.example` to `.env`, create OAuth apps with the callback URLs shown there, fill in the provider credentials, and run the API in a second terminal:
