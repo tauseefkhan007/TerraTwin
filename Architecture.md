@@ -6,7 +6,7 @@
 
 ## Implemented stack for this branch
 
-TerraTwin is currently a fast static-data MVP, not a deployed React/FastAPI service:
+TerraTwin is currently a fast static-data MVP with an optional local FastAPI service, not a deployed React application:
 
 - **Scientific pipeline:** Python 3.10+, NumPy, SciPy, rasterio, pyproj and Pillow.
 - **Application UI:** static HTML, CSS and vanilla JavaScript.
@@ -16,7 +16,7 @@ TerraTwin is currently a fast static-data MVP, not a deployed React/FastAPI serv
 - **Collaboration:** GitHub branches and pull requests.
 - **Source policy:** final evidence may use only the official NASA Space Apps 2026 Resources tab; inherited PTAE inputs are provisional and must be revalidated.
 
-The scoring API and React client remain future extraction paths. The current demo still runs as static HTML/CSS/JavaScript; the FastAPI process is only needed when Google/GitHub sign-in is enabled.
+The current demo still runs as static HTML/CSS/JavaScript. FastAPI now exposes read-only dataset, methodology, candidate and comparison endpoints in addition to the optional Google/GitHub sign-in flow; a React client remains a future extraction path.
 
 ## 1. Architecture objectives
 
@@ -74,17 +74,28 @@ The MVP is a modular monolith with offline geospatial preprocessing and a static
 
 ## 3. System components
 
-### 3.0 Authentication boundary
+### 3.0 Application/API boundary
+
+The static dashboard is the primary presentation layer and reads the validated JSON artifacts directly for an offline demo. The optional FastAPI service exposes the same evidence state through:
+
+- `/api/datasets` for source-lock and structural-audit status;
+- `/api/methodology` for the formula and required guardrails;
+- `/api/candidates` and `/api/candidates/{id}` for body-separated records;
+- `/api/candidates/{id}/comparison` for provisional-versus-verified terrain comparisons.
+
+When the source lock is blocked, comparison responses keep `similarity_score` null and place the imported value in `provisional_similarity_score`. This prevents an API consumer from treating an unverified import as a final result.
+
+### 3.1 Authentication boundary
 
 The dashboard has a local demo path and an optional OAuth path. When the FastAPI auth service is running, GitHub and Google buttons redirect to the provider, validate a one-time state value, fetch the normalized profile, and issue a short-lived signed HTTP-only session cookie. Provider credentials and callback URLs are read from `.env`; provider passwords and access tokens are never stored. The current session holds identity only, separate from the scientific feature store. Team collaboration remains handled through GitHub repository access and pull requests.
 
-### 3.1 Scientific data sources
+### 3.2 Scientific data sources
 
 For the challenge submission, the source of truth is the official [NASA Space Apps 2026 Resources tab](https://www.spaceappschallenge.org/2026/challenges/permanent-moon-base-locations-and-mars/?tab=resources). The exact resources captured from that page are recorded in [`data/official_resources_catalog.json`](data/official_resources_catalog.json): NASA Earthdata Search, NASA Worldview, NASA PDS, NASA LRO, NASA LRO Diviner, CSA RADARSAT resources, ESA Copernicus Data Space, ESA Open Science Catalog and JAXA G-Portal.
 
 No URL outside that catalog may be used in final challenge evidence. `src/source_lock.py` validates exact resource URLs and required provenance fields; `dashboard/source_lock.json` is the generated audit consumed by the frontend. The inherited adapters and result JSON remain available for regression testing only and are hidden from the ranking workspace until the audit passes.
 
-### 3.2 Ingestion layer
+### 3.3 Ingestion layer
 
 The ingestion layer is an offline collection of scripts rather than a live service.
 
@@ -98,7 +109,7 @@ Responsibilities:
 
 The ingestion layer must never silently replace failed downloads with invented values or an unapproved fallback. If a source is unavailable, the pipeline should fail clearly, mark that feature unavailable and keep the source lock blocked.
 
-### 3.3 Geospatial preprocessing layer
+### 3.4 Geospatial preprocessing layer
 
 Responsibilities:
 
@@ -120,7 +131,7 @@ Recommended Python libraries:
 
 All derived products should include the source dataset identifiers used to create them.
 
-### 3.4 Feature store
+### 3.5 Feature store
 
 The MVP should store both geospatial artifacts and compact feature summaries.
 
@@ -147,7 +158,7 @@ data/
 
 Use GeoJSON for map geometries and Parquet or JSON for feature summaries. SQLite can provide simple filtering and joins without introducing a database service.
 
-### 3.5 Feature schema
+### 3.6 Feature schema
 
 Example candidate feature record:
 

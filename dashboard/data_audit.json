@@ -1,0 +1,25 @@
+{
+  "counts": {
+    "demo_candidate_records": 10,
+    "earth_feature_records": 49,
+    "global_sites": 33,
+    "global_targets": 8,
+    "mars_targets": 6,
+    "moon_targets": 4,
+    "planetary_target_records": 2,
+    "ranking_rows_per_target": 49,
+    "ranking_targets": 2,
+    "target_sites": 10
+  },
+  "errors": [],
+  "generated_on": "2026-11-15",
+  "meaning": "Structural checks passed; source_lock.ready still controls whether numeric multi-modal results may be presented as official challenge evidence.",
+  "schema_version": 1,
+  "source_lock": {
+    "blocked_sources": 6,
+    "missing_provenance": 3,
+    "ready": false,
+    "status": "blocked_inherited_baseline"
+  },
+  "status": "pass"
+}

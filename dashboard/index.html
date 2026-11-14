@@ -2643,16 +2643,16 @@
                     </details>
                     <div class="gs-analogx-controls">
                         <label for="gs-analogx-filter">Filter records <input type="search" id="gs-analogx-filter" placeholder="Search site or region" autocomplete="off"></label>
-                        <label for="gs-analogx-body">Planet <select id="gs-analogx-body"><option value="all">Earth + Mars</option><option value="Earth">Earth</option><option value="Mars">Mars</option></select></label>
+                        <label for="gs-analogx-body">Imported body <select id="gs-analogx-body"><option value="all">Earth + Mars</option><option value="Earth">Earth</option><option value="Mars">Mars</option></select></label>
                         <label for="gs-terrain-target">Compare terrain <select id="gs-terrain-target"></select></label>
                     </div>
                     <div class="gs-table-wrap gs-analogx-table-wrap">
                         <table class="gs-table gs-analogx-table">
-                            <thead><tr><th>#</th><th>Body</th><th>Location</th><th>Terrain score</th><th>Lat</th><th>Lon</th><th>Elevation m</th><th>Slope</th><th>Roughness</th><th>Relief</th></tr></thead>
+                            <thead><tr><th>#</th><th>Body</th><th>Location</th><th id="gs-analogx-score-heading">Terrain score</th><th>Lat</th><th>Lon</th><th>Elevation m</th><th>Slope</th><th>Roughness</th><th>Relief</th></tr></thead>
                             <tbody id="gs-analogx-table-body"></tbody>
                         </table>
                     </div>
-                    <small class="gs-analogx-footnote">Terrain score is a transparent screening metric. Climate, geology, landing safety and environmental equivalence are not inferred.</small>
+                    <small class="gs-analogx-footnote" id="gs-analogx-footnote">Terrain score is a transparent screening metric. Climate, geology, landing safety and environmental equivalence are not inferred.</small>
                 </section>
                 <section class="gs-source-lock is-blocked" id="gs-source-lock" aria-labelledby="gs-source-lock-heading" hidden>
                     <div class="gs-source-lock-head">
@@ -3416,6 +3416,8 @@
         let comparisonSiteId = '';
         let scoreResults = { moon: null, mars: null };
         let scoreResultsLoadError = false;
+        let scientificScoresVisible = false;
+        let syntheticDemoVisible = true;
         let windowSensitivityData = null;
         let windowSensitivityLoadError = false;
         let map, markers = [], radarChartInstance;
@@ -3505,7 +3507,10 @@
             const query = document.getElementById('site-search')?.value.trim().toLowerCase() || '';
             const category = document.getElementById('site-filter')?.value || 'all';
 
-            return analogSites.filter(site => {
+            const sourceSites = currentView === 'earth' && importedTerrainSites.length
+                ? importedTerrainSites
+                : analogSites.filter(site => !site.id.startsWith('terrain-'));
+            return sourceSites.filter(site => {
                 const searchable = `${site.name} ${site.country} ${site.type} ${site.desc}`.toLowerCase();
                 if (query && !searchable.includes(query)) return false;
                 if (category === 'volcanic' && !/volcanic|basaltic|tephra/i.test(site.type)) return false;
@@ -3861,7 +3866,9 @@
             if (!payload || payload.target !== target || !Array.isArray(payload.rankings)) {
                 throw new Error(`Invalid ${target} score result schema.`);
             }
-            const expectedIds = new Set(analogSites.map(site => site.pipelineId));
+            const expectedIds = new Set(analogSites
+                .filter(site => !site.id.startsWith('terrain-'))
+                .map(site => site.pipelineId));
             const foundIds = new Set();
             for (const result of payload.rankings) {
                 if (!result || !expectedIds.has(result.site_id) || foundIds.has(result.site_id)) {
@@ -4096,12 +4103,28 @@
             if (selected) selected.textContent = currentView === 'earth' ? 'Earth' : bodyName;
             if (selectedNote) selectedNote.textContent = currentView === 'earth' ? 'browse mode' : 'planetary target mode';
 
-            const top = scoreResults[currentTarget]?.rankings?.find(result => result.rank === 1);
+            const top = syntheticDemoVisible ? scoreResults[currentTarget]?.rankings?.find(result => result.rank === 1) : null;
             if (top || scoreResultsLoadError) leader?.classList.remove('json-loading-skeleton');
-            if (leader) leader.textContent = top?.site_name || (scoreResultsLoadError ? 'Results unavailable' : 'Loading results…');
+            if (leader) leader.textContent = top?.site_name || (scoreResultsLoadError ? 'Results unavailable' : 'Loading demo results…');
             if (leaderScore) leaderScore.textContent = top
-                ? `${top.aci.toFixed(2)}% · ${currentTarget} demo`
-                : scoreResultsLoadError ? 'Load target result JSON' : 'ACI from JSON';
+                ? `${top.aci.toFixed(2)}% · ${currentTarget} synthetic demo`
+                : scoreResultsLoadError ? 'Load target result JSON' : 'ACI demo from JSON';
+        }
+
+        function setScientificScoreVisibility(visible) {
+            scientificScoresVisible = Boolean(visible);
+            const rankingCard = document.querySelector('.ranking-card');
+            const similarityCard = document.getElementById('similarity-card');
+            if (rankingCard) rankingCard.hidden = currentView === 'earth';
+            if (similarityCard) similarityCard.hidden = !syntheticDemoVisible;
+            if (!syntheticDemoVisible) {
+                ['site-score-box', 'site-metrics', 'validation-content'].forEach(id => {
+                    const node = document.getElementById(id);
+                    if (node) node.hidden = true;
+                });
+            }
+            updateRadarChart();
+            updateQuickStats();
         }
 
         function setMapNotice(message, isError = false) {
@@ -5819,9 +5842,9 @@
             const chartFrame = document.querySelector('.chart-frame');
             const chartCaption = document.querySelector('.chart-frame + .chart-caption');
             const earthNote = document.getElementById('earth-chart-note');
-            if (chartFrame) chartFrame.hidden = currentView === 'earth';
-            if (chartCaption) chartCaption.hidden = currentView === 'earth';
-            if (earthNote) earthNote.hidden = currentView !== 'earth';
+            if (chartFrame) chartFrame.hidden = currentView === 'earth' || !syntheticDemoVisible;
+            if (chartCaption) chartCaption.hidden = currentView === 'earth' || !syntheticDemoVisible;
+            if (earthNote) earthNote.hidden = currentView !== 'earth' || !syntheticDemoVisible;
             if (!radarChartInstance) return;
             radarChartInstance.data.datasets[1].label = selectedSite.name;
             radarChartInstance.data.datasets[1].data = radarValues(selectedSite, currentTarget);
@@ -5882,7 +5905,7 @@
             const sub = getCandidateResult(site, currentTarget)?.sub_scores;
             const container = document.getElementById('site-metrics');
             if (!container) return;
-            container.hidden = currentView === 'earth' || !sub;
+            container.hidden = currentView === 'earth' || !syntheticDemoVisible || !sub;
             if (!sub) {
                 container.innerHTML = '';
                 return;
@@ -6145,9 +6168,9 @@
             document.getElementById('site-score-breakdown').textContent = result
                 ? `Base ${result.base_topographic_score.toFixed(2)} · +${result.applied_bonus.toFixed(2)}${result.capped ? ' · capped' : ''}`
                 : scoreResultsLoadError ? 'Results unavailable' : 'Loading result JSON…';
-            document.getElementById('site-score-box').hidden = targetSite || currentView === 'earth' || !result;
+            document.getElementById('site-score-box').hidden = targetSite || currentView === 'earth' || !syntheticDemoVisible || !result;
             document.getElementById('earth-mode-note').hidden = targetSite || currentView !== 'earth';
-            document.getElementById('site-metrics').hidden = targetSite;
+            document.getElementById('site-metrics').hidden = targetSite || !syntheticDemoVisible;
             const targetContext = document.getElementById('target-site-context');
             targetContext.hidden = !targetSite;
             if (targetSite) {
@@ -6229,7 +6252,7 @@
             const count = document.getElementById('candidate-count');
             const rankingTarget = document.getElementById('ranking-target');
             if (count) count.textContent = currentView === 'earth'
-                ? `${visibleSites.length} of ${analogSites.length} Earth analogs`
+                ? `${visibleSites.length} imported Earth records`
                 : `${visibleSites.length} Earth analogs · ${currentTarget === 'moon' ? 'Moon' : 'Mars'} target`;
             if (rankingTarget) rankingTarget.textContent = currentView === 'earth'
                 ? `${currentTarget === 'moon' ? 'Moon' : 'Mars'} comparison · Earth browse`
@@ -6237,7 +6260,9 @@
             const provenance = document.getElementById('leaderboard-provenance');
             if (provenance) provenance.textContent = scoreResultsLoadError
                     ? 'Python ACI results could not be loaded.'
-                    : `Ranked from dashboard/results_${currentTarget}.json${currentView === 'earth' ? ' while browsing Earth candidates' : ''}.`;
+                    : scientificScoresVisible
+                        ? `Ranked from dashboard/results_${currentTarget}.json.`
+                        : 'Synthetic demo only: results_moon.json/results_mars.json are not official challenge evidence.';
             const sortControl = document.getElementById('leaderboard-sort');
             const sortLabel = document.querySelector('label[for="leaderboard-sort"]');
             if (sortControl) {
@@ -6929,6 +6954,12 @@
                 const jezero = rankings.rankings?.['mars-jezero'] || [];
                 const olympus = rankings.rankings?.['mars-olympus'] || [];
                 const fmt = value => Number.isFinite(Number(value)) ? Number(value).toFixed(2) : '—';
+                const terrainFields = ['slope', 'roughness', 'relief'];
+                const earthRows = dataset.earth_features || [];
+                const fieldCoverage = field => earthRows.length
+                    ? Math.round(100 * earthRows.filter(row => Number.isFinite(Number(row[field]))).length / earthRows.length)
+                    : 0;
+                const terrainCoverage = Math.round(terrainFields.reduce((sum, field) => sum + fieldCoverage(field), 0) / terrainFields.length);
 
                 const exploreRows = jezero.slice(0, 12).map(row => [row.rank, row.site_name, row.country, `${fmt(row.score)}/100`, `${fmt(row.features.slope)}°`, `${fmt(row.features.roughness)}`, `${fmt(row.features.relief)} m`]);
                 renderSection(
@@ -6941,11 +6972,11 @@
 
                 const validationContent = make('div');
                 validationContent.append(
-                    make('p', `${dataset.counts.earth_feature_records} Earth records, ${dataset.counts.planetary_target_records} Mars targets, ${dataset.counts.demo_candidate_records} demo candidates, and a ${dataset.counts.sensitivity_audit_characters}-character sensitivity audit are loaded.`),
+                    make('p', `${dataset.counts.earth_feature_records} Earth records, ${dataset.counts.planetary_target_records} Mars targets, ${dataset.counts.demo_candidate_records} demo candidates, and a ${dataset.counts.sensitivity_audit_characters}-character sensitivity audit are loaded. The imported repository remains provisional until the official Resources-tab audit passes.`),
                     table(['Check', 'Result'], [
                         ['Earth feature coverage', `${dataset.counts.earth_feature_records}/49 records`],
                         ['Mars target coverage', `${dataset.counts.planetary_target_records}/2 records`],
-                        ['Terrain feature coverage', '100% slope · roughness · relief'],
+                        ['Terrain feature coverage', `${terrainCoverage}% across slope · roughness · relief`],
                         ['Raw cache inventory', `${dataset.counts.raw_hgt_tiles} HGT + ${dataset.counts.raw_zip_caches} ZIP`],
                         ['Ranking guardrail', 'Terrain screening only; not landing safety'],
                     ]),
@@ -6966,6 +6997,7 @@
         }
 
         async function enforceOfficialSourceGate() {
+            setScientificScoreVisibility(false);
             const lockSection = (id, title) => {
                 const section = document.getElementById(id);
                 if (!section) return;
@@ -6991,15 +7023,24 @@
                 section.classList.add('source-locked-section');
             };
             try {
-                const response = await fetch('source_lock.json', { cache: 'no-store' });
+                const [response, dataAuditResponse] = await Promise.all([
+                    fetch('source_lock.json', { cache: 'no-store' }),
+                    fetch('data_audit.json', { cache: 'no-store' }),
+                ]);
                 if (!response.ok) throw new Error(`source_lock.json HTTP ${response.status}`);
                 const audit = await response.json();
+                const dataAudit = dataAuditResponse.ok ? await dataAuditResponse.json() : null;
+                window.__nakshDataAudit = dataAudit;
+                if (!dataAudit || dataAudit.status !== 'pass') throw new Error('dashboard/data_audit.json failed structural validation');
                 window.__terratwinSourceLock = audit;
                 const terrainViewsReady = await renderImportedTerrainViews();
-                if (audit.ready === true && audit.status === 'ready') return true;
+                if (audit.ready === true && audit.status === 'ready') {
+                    setScientificScoreVisibility(true);
+                    return true;
+                }
                 const notice = document.getElementById('scientific-source-lock-notice');
                 const message = document.getElementById('scientific-source-lock-message');
-                if (message) message.textContent = 'Legacy scientific scores are paused pending complete data validation. Imported terrain records remain available in Global Search.';
+                if (message) message.textContent = 'Verified multi-modal scores are paused. Imported terrain records remain available as provisional evidence in Global Search.';
                 if (notice) notice.hidden = terrainViewsReady;
                 if (!terrainViewsReady) {
                     lockSection('explore-section', 'Explore Sites is waiting for verified data');
@@ -7010,16 +7051,13 @@
                     const node = document.getElementById(id);
                     if (node) { node.classList.add('is-locked'); node.removeAttribute('aria-disabled'); node.tabIndex = 0; }
                 });
-                ['site-score-box', 'site-metrics', 'validation-content'].forEach(id => {
-                    const node = document.getElementById(id);
-                    if (node) node.hidden = true;
-                });
+                setScientificScoreVisibility(false);
                 return false;
             } catch (error) {
                 const terrainViewsReady = await renderImportedTerrainViews();
                 const notice = document.getElementById('scientific-source-lock-notice');
                 const message = document.getElementById('scientific-source-lock-message');
-                if (message) message.textContent = 'Legacy scientific scores are paused because the data validation record is unavailable.';
+                if (message) message.textContent = 'Verified multi-modal scores are paused because the data audit is unavailable. Imported terrain records remain provisional.';
                 if (notice) notice.hidden = terrainViewsReady;
                 if (!terrainViewsReady) {
                     lockSection('explore-section', 'Explore Sites is waiting for verified data');
@@ -7030,6 +7068,7 @@
                     const node = document.getElementById(id);
                     if (node) { node.classList.add('is-locked'); node.removeAttribute('aria-disabled'); node.tabIndex = 0; }
                 });
+                setScientificScoreVisibility(false);
                 return false;
             }
         }
@@ -7048,6 +7087,12 @@
                 loadTargetSiteCatalog();
                 initMap();
                 init3D();
+                try {
+                    initRadarChart();
+                } catch (error) {
+                    console.warn('Synthetic demo radar could not be initialized:', error);
+                }
+                loadAciResults();
                 selectSite(selectedSite, false);
                 return;
             }

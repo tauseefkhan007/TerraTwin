@@ -1,7 +1,7 @@
 {
   "status": "blocked_inherited_baseline",
   "ready": false,
-  "audited_on": "2026-11-14",
+  "audited_on": "2026-11-15",
   "official_resources_url": "https://www.spaceappschallenge.org/2026/challenges/permanent-moon-base-locations-and-mars/?tab=resources",
   "message": "Numeric ranking results are development fixtures and are hidden from final evidence until every input is re-ingested from an approved Resources-tab resource.",
   "approved_resources": [

@@ -12,7 +12,9 @@ TerraTwin is an interactive screening tool for comparing Earth field environment
 
 The current branch is the first TerraTwin build: an MIT-licensed scientific scoring base, Earth–Moon–Mars intro animation, four mission-profile presets, a separate coverage score, per-site guardrails, famous-analog benchmark checks and a deterministic grounded Science Copilot scaffold.
 
-The official source lock is enforced by [`src/source_lock.py`](src/source_lock.py), [`data/official_resources_catalog.json`](data/official_resources_catalog.json) and [`dashboard/source_lock.json`](dashboard/source_lock.json). The dashboard hides numeric ranking results while the audit is blocked. This is intentional: the imported baseline must not be mistaken for official challenge evidence.
+The official source lock is enforced by [`src/source_lock.py`](src/source_lock.py), [`data/official_resources_catalog.json`](data/official_resources_catalog.json) and [`dashboard/source_lock.json`](dashboard/source_lock.json). The dashboard hides the inherited multi-modal ranking workspace while the audit is blocked. The original five-site synthetic demo remains available with an explicit demo label, and the 49-record imported terrain table remains available as provisional terrain-only evidence.
+
+The static data graph is checked by [`src/app_data_validation.py`](src/app_data_validation.py) and its generated [`dashboard/data_audit.json`](dashboard/data_audit.json). The optional FastAPI service exposes the same state at `/api/datasets`, `/api/methodology`, `/api/candidates` and the candidate comparison routes.
 
 Exact product endpoints selected for the re-ingestion are recorded in
 [`data/official_product_urls.json`](data/official_product_urls.json). Recording
@@ -135,10 +137,12 @@ Tests (offline): `python -m unittest discover -s tests -v`. Browser tests also n
 catalog/                 Earth sites and Moon/Mars targets (curated tags, heritage, limits)
 src/geodata.py           Data adapters retained for the provisional development baseline
 src/source_lock.py       Official Resources-tab catalog and provenance gate
+src/app_data_validation.py  Static dashboard data graph validator and audit writer
 src/multiscale.py        Baseline slope signatures, sliding windows, water masking
 src/analog_score.py      Terrain/environment/geology similarity, aggregation, robustness, AUC
 src/global_search.py     End-to-end pipeline and CLI
-dashboard/               Static TerraTwin web app (Global Search plus legacy demo tabs)
+dashboard/               Static TerraTwin web app (Global Search plus explicit synthetic demo)
+backend/app.py           Optional OAuth service plus read-only science/data API
 tests/                   Unit tests for the inherited baseline and the v1 pipeline
 main.py, src/terrain_metrics.py, similarity_matcher.py, synthetic_generator.py
                          v1 synthetic-terrain demo, kept for the original tabs and tests

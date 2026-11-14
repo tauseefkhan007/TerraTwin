@@ -168,7 +168,18 @@
             if (left.body !== right.body) return left.body === 'Earth' ? -1 : 1;
             return (right.ranking?.score || -1) - (left.ranking?.score || -1);
         });
-        summary.textContent = `${all.length} primary records loaded: ${earth.length} Earth terrain records and ${mars.length} Mars targets, plus ${demoCount} demo candidates and a sensitivity audit. Terrain score compares slope, roughness and relief against ${target?.name || 'the selected target'}; coverage 100%.`;
+        const terrainFields = ['slope', 'roughness', 'relief'];
+        const terrainCoverage = earth.length
+            ? Math.round(terrainFields.reduce((sum, field) => sum + earth.filter(row => Number.isFinite(Number(row[field]))).length, 0) / (earth.length * terrainFields.length) * 100)
+            : 0;
+        const scoreHeading = $('gs-analogx-score-heading');
+        const footnote = $('gs-analogx-footnote');
+        if (scoreHeading) scoreHeading.textContent = sourceLockReady() ? 'Terrain score' : 'Provisional terrain score';
+        if (footnote) footnote.textContent = sourceLockReady()
+            ? 'Terrain score is a transparent screening metric. Climate, geology, landing safety and environmental equivalence are not inferred.'
+            : 'Provisional imported terrain score. Source audit is pending; do not use it as final challenge evidence. Climate, geology, landing safety and environmental equivalence are not inferred.';
+        const statusLabel = sourceLockReady() ? 'source-verified' : 'provisional imported baseline; final multi-modal scores paused';
+        summary.textContent = `${all.length} imported records loaded: ${earth.length} Earth terrain records and ${mars.length} Mars targets, plus ${demoCount} demo candidates and a sensitivity audit. Terrain score compares slope, roughness and relief against ${target?.name || 'the selected target'}; ${terrainCoverage}% of the three terrain fields are populated across Earth records. Status: ${statusLabel}.`;
         const number = value => Number.isFinite(Number(value)) ? Number(value).toFixed(2) : '—';
         body.replaceChildren(...rows.map(row => el('tr', {}, [
             el('td', { class: 'gs-num', text: row.ranking?.rank ? String(row.ranking.rank) : '—' }),
@@ -528,7 +539,7 @@
         const copilot = $('gs-copilot-text');
         if (copilot) copilot.textContent = buildCopilotBrief(row, target, site);
         const guardrail = $('gs-site-guardrail');
-        if (guardrail) guardrail.textContent = `Guardrail for ${site.name}: Earth analog evidence cannot reproduce ${earth.gravity_ms2} m/s2 lunar/Martian gravity, target-body atmospheric pressure, radiation, illumination or subsurface conditions. Use this report to prioritize field validation, not to certify a landing or habitat site.`;
+        if (guardrail) guardrail.textContent = `Guardrail for ${site.name}: Earth analog evidence cannot reproduce ${earth.gravity_ms2} m/s2 Earth-to-${target.body} gravity, target-body atmospheric pressure, radiation, illumination or subsurface conditions. Use this report to prioritize field validation, not to certify a landing or habitat site.`;
         $('gs-detail').hidden = false;
     }
 
