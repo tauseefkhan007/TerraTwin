@@ -21,8 +21,6 @@
 
     const CTA_AT = 0.86;      // scroll progress at which the call to action appears
     const EASE = 0.28;        // faster catch-up keeps the scroll response close to 60/65 Hz
-    const IDLE_DELAY = 520;   // wait briefly after scrolling stops before playing
-    const IDLE_RATE = 1.4;    // faster cinematic playback while scrolling is paused
     const SEEK_THRESHOLD = 0.025;
     const FAST_SEEK_THRESHOLD = 0.75;
     const reducedMotion = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
@@ -35,7 +33,6 @@
     let ready = false;
     let failed = false;
     let primed = false;
-    let idleTimer = 0;
 
     function pickSource() {
         return 'assets/video/naksh-intro-scrub.mp4';
@@ -94,29 +91,9 @@
         }
     }
 
-    function stopIdlePlayback() {
-        if (idleTimer) {
-            window.clearTimeout(idleTimer);
-            idleTimer = 0;
-        }
+    function pausePlayback() {
         if (!video.paused) video.pause();
         video.playbackRate = 1;
-    }
-
-    function startIdlePlayback() {
-        idleTimer = 0;
-        if (failed || reducedMotion || landing.hidden || !ready || !duration || !primed || video.ended) return;
-        current = target;
-        applyFrame();
-        video.playbackRate = IDLE_RATE;
-        const playback = video.play();
-        if (playback && typeof playback.catch === 'function') playback.catch(function () { /* autoplay may still be blocked */ });
-    }
-
-    function scheduleIdlePlayback() {
-        if (failed || reducedMotion || !primed) return;
-        if (idleTimer) window.clearTimeout(idleTimer);
-        idleTimer = window.setTimeout(startIdlePlayback, IDLE_DELAY);
     }
 
     function paintUi() {
@@ -135,11 +112,10 @@
 
     function onScroll() {
         if (failed || reducedMotion) return;
-        stopIdlePlayback();
+        pausePlayback();
         target = scrollProgress();
         paintUi();
         if (!raf) raf = window.requestAnimationFrame(tick);
-        scheduleIdlePlayback();
     }
 
     // iOS/Safari only let a video seek reliably after a user gesture has "touched" it.
@@ -221,7 +197,7 @@
     // When the landing is shown again (log out) restart from the beginning of the journey.
     new MutationObserver(function () {
         if (!landing.hidden) {
-            stopIdlePlayback();
+            pausePlayback();
             landing.scrollTop = 0;
             target = 0;
             current = 0;
