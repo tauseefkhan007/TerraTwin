@@ -2578,9 +2578,9 @@
                 <div class="planet-nav">
                     <span class="target-label">Planetary navigation</span>
                     <div class="target-pill" role="group" aria-label="Browse Earth sites or choose a planetary comparison">
-                        <button type="button" class="target-btn" id="btn-target-earth" data-target="earth" aria-pressed="false"><img class="planet-image" data-planet-icon="earth" alt="Earth" width="40" height="40" onerror="this.hidden=true; this.nextElementSibling.hidden=false"><span class="planet-fallback-dot planet-earth" aria-hidden="true" hidden></span><span>Earth</span></button>
-                        <button type="button" class="target-btn active" id="btn-target-moon" data-target="moon" aria-pressed="true"><img class="planet-image" data-planet-icon="moon" alt="Moon" width="40" height="40" onerror="this.hidden=true; this.nextElementSibling.hidden=false"><span class="planet-fallback-dot planet-moon" aria-hidden="true" hidden></span><span>Moon</span></button>
-                        <button type="button" class="target-btn" id="btn-target-mars" data-target="mars" aria-pressed="false"><img class="planet-image" data-planet-icon="mars" alt="Mars" width="40" height="40" onerror="this.hidden=true; this.nextElementSibling.hidden=false"><span class="planet-fallback-dot planet-mars" aria-hidden="true" hidden></span><span>Mars</span></button>
+                        <button type="button" class="target-btn" id="btn-target-earth" data-target="earth" aria-pressed="false" onclick="switchTarget('earth')"><img class="planet-image" data-planet-icon="earth" alt="Earth" width="40" height="40" onerror="this.hidden=true; this.nextElementSibling.hidden=false"><span class="planet-fallback-dot planet-earth" aria-hidden="true" hidden></span><span>Earth</span></button>
+                        <button type="button" class="target-btn active" id="btn-target-moon" data-target="moon" aria-pressed="true" onclick="switchTarget('moon')"><img class="planet-image" data-planet-icon="moon" alt="Moon" width="40" height="40" onerror="this.hidden=true; this.nextElementSibling.hidden=false"><span class="planet-fallback-dot planet-moon" aria-hidden="true" hidden></span><span>Moon</span></button>
+                        <button type="button" class="target-btn" id="btn-target-mars" data-target="mars" aria-pressed="false" onclick="switchTarget('mars')"><img class="planet-image" data-planet-icon="mars" alt="Mars" width="40" height="40" onerror="this.hidden=true; this.nextElementSibling.hidden=false"><span class="planet-fallback-dot planet-mars" aria-hidden="true" hidden></span><span>Mars</span></button>
                     </div>
                 </div>
             </div>
@@ -6362,10 +6362,10 @@
 
         function initializeTargetNavigation() {
             document.querySelectorAll('.target-btn[data-target]').forEach(button => {
-                button.addEventListener('click', event => {
+                button.onclick = event => {
                     event.preventDefault();
                     switchTarget(button.dataset.target);
-                });
+                };
             });
         }
 
