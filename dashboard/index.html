@@ -2563,7 +2563,7 @@
             <a href="#science-section" class="tab-btn" id="tab-data" data-section="science-section" data-pane="data-tab" role="tab" aria-selected="false" aria-controls="science-section" onclick="navigateToDashboardSection('science-section','data-tab','tab-data'); return false;" title="Science and data"><svg class="nav-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 5c0-1.1 3.6-2 8-2s8 .9 8 2-3.6 2-8 2-8-.9-8-2Z"/><path d="M4 5v7c0 1.1 3.6 2 8 2s8-.9 8-2V5M4 12v7c0 1.1 3.6 2 8 2s8-.9 8-2v-7"/></svg><span>Science &amp; Data</span></a>
         </nav>
         <blockquote class="sidebar-quote">“From Earth evidence to planetary mission readiness.”<cite>NAKSH project tagline</cite></blockquote>
-        <div class="sidebar-status" role="status"><strong>Evidence-first prototype</strong><span>Official challenge source lock in progress<br>Measured data stays separate from priors</span></div>
+                <div class="sidebar-status" role="status"><strong>Terrain ranking active</strong><span>Imported measurements are scored separately<br>from unsupported priors</span></div>
         <button type="button" class="sidebar-logout" id="terratwin-logout" hidden><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M10 4H5.5A1.5 1.5 0 0 0 4 5.5v13A1.5 1.5 0 0 0 5.5 20H10"/><path d="M13 8l4 4-4 4M8 12h9"/></svg><span>Log out</span></button>
     </aside>
 
@@ -2611,9 +2611,9 @@
         </div>
         <div class="results-load-error" id="results-load-error" role="alert" aria-live="assertive" hidden></div>
         <div class="source-integrity-banner" id="scientific-source-lock-notice" role="alert" aria-live="assertive" hidden>
-            <strong>SCIENCE DATA LOCKED</strong>
-            <span id="scientific-source-lock-message">Legacy scientific outputs are paused until data validation passes.</span>
-            <a href="https://www.spaceappschallenge.org/2026/challenges/permanent-moon-base-locations-and-mars/?tab=resources" target="_blank" rel="noopener noreferrer">View approved resources</a>
+            <strong>ADDITIONAL VIEWS PAUSED</strong>
+            <span id="scientific-source-lock-message">Additional legacy views are paused until their data validation passes.</span>
+            <a href="https://www.spaceappschallenge.org/2026/challenges/permanent-moon-base-locations-and-mars/?tab=resources" target="_blank" rel="noopener noreferrer">View data resources</a>
         </div>
 
     <!-- MAIN APP CONTENT -->
@@ -2623,8 +2623,8 @@
         <div class="tab-pane" id="global-tab" role="tabpanel" aria-labelledby="tab-global">
             <section class="content-section" id="global-section" aria-labelledby="global-heading">
                 <div class="section-heading">
-                    <div><span class="eyebrow">NAKSH ranking workspace · inherited baseline pending source lock</span><h2 id="global-heading">Global Analog Search</h2></div>
-                    <p>Scans 40 km windows across each region and scores them on terrain, climate and geology. Includes less-studied regions and negative controls.</p>
+                    <div><span class="eyebrow">NAKSH terrain ranking · imported records</span><h2 id="global-heading">Global Analog Search</h2></div>
+                    <p>Ranks all imported Earth terrain records against the selected Mars target using slope, roughness and relief.</p>
                 </div>
                 <p class="results-load-error" id="gs-status" role="alert" hidden></p>
                 <section class="card gs-analogx-card" id="gs-analogx-card" aria-labelledby="gs-analogx-heading">
@@ -2635,18 +2635,19 @@
                     <div class="gs-analogx-controls">
                         <label for="gs-analogx-filter">Filter records <input type="search" id="gs-analogx-filter" placeholder="Search site or region" autocomplete="off"></label>
                         <label for="gs-analogx-body">Planet <select id="gs-analogx-body"><option value="all">Earth + Mars</option><option value="Earth">Earth</option><option value="Mars">Mars</option></select></label>
+                        <label for="gs-terrain-target">Compare terrain <select id="gs-terrain-target"></select></label>
                     </div>
                     <div class="gs-table-wrap gs-analogx-table-wrap">
                         <table class="gs-table gs-analogx-table">
-                            <thead><tr><th>Body</th><th>Location</th><th>Lat</th><th>Lon</th><th>Elevation m</th><th>Slope</th><th>Roughness</th><th>Relief</th></tr></thead>
+                            <thead><tr><th>#</th><th>Body</th><th>Location</th><th>Terrain score</th><th>Lat</th><th>Lon</th><th>Elevation m</th><th>Slope</th><th>Roughness</th><th>Relief</th></tr></thead>
                             <tbody id="gs-analogx-table-body"></tbody>
                         </table>
                     </div>
-                    <small class="gs-analogx-footnote">Imported terrain features are available for development and comparison; only the legacy multi-modal ACI ranking is source-locked.</small>
+                    <small class="gs-analogx-footnote">Terrain score is a transparent screening metric. Climate, geology, landing safety and environmental equivalence are not inferred.</small>
                 </section>
-                <section class="gs-source-lock is-blocked" id="gs-source-lock" aria-labelledby="gs-source-lock-heading">
+                <section class="gs-source-lock is-blocked" id="gs-source-lock" aria-labelledby="gs-source-lock-heading" hidden>
                     <div class="gs-source-lock-head">
-                        <span class="gs-source-lock-badge" id="gs-source-lock-badge">LEGACY RANKING LOCK</span>
+                        <span class="gs-source-lock-badge" id="gs-source-lock-badge">ADDITIONAL RANKING</span>
                         <h2 id="gs-source-lock-heading">Legacy ranking status</h2>
                     </div>
                     <p id="gs-source-lock-message">Checking legacy ranking validation.</p>
@@ -3132,27 +3133,27 @@
             <section class="content-section science-section" id="science-section" aria-labelledby="science-heading">
                 <div class="section-heading">
                     <div><span class="eyebrow">Inputs, method, and scope</span><h2 id="science-heading">Science &amp; Data</h2></div>
-                    <p>Review the five terrain metrics, environmental bonus, source provenance, and current limits.</p>
+                    <p>Review the imported terrain metrics, active similarity method, source provenance, and current limits.</p>
                 </div>
                 <section class="card method-card" aria-labelledby="method-heading">
                     <div class="card-header"><div><span class="eyebrow">Scoring method</span><h3 id="method-heading">Method</h3></div></div>
-                    <p>Weighted Gaussian similarity over slope mean/std, TRI mean/std, and elevation std, plus an additive environmental bonus of up to +5 points.</p>
-                    <p class="method-formula" aria-label="ACI formula">ACI = min(100, 100 × Σ(wᵢ · exp(−½(Δᵢ/σᵢ)²)) / Σwᵢ + environmental bonus)</p>
+                    <p>Terrain similarity compares slope directly and roughness/relief on a log scale. Planetary elevation is retained as context but excluded because Earth and Mars use different datums.</p>
+                    <p class="method-formula" aria-label="Terrain similarity formula">Terrain score = 100 × exp(−mean(slope relative delta, log roughness delta, log relief delta))</p>
                 </section>
                 <section class="card source-summary-card" aria-labelledby="source-summary-heading">
                     <div class="card-header"><div><span class="eyebrow">Validation inputs</span><h3 id="source-summary-heading">Data Sources &amp; Notes</h3></div></div>
                     <ul class="source-summary-list">
-                        <li><strong>LRO LOLA</strong><span>Moon · real 20 m south-polar windows used for validation</span></li>
-                        <li><strong>MOLA</strong><span>Mars · 463 m/pixel; too coarse for like-for-like comparison</span></li>
-                        <li><strong>AWS Terrain Tiles</strong><span>Askja · real composite terrain · approximately 30 m</span></li>
-                        <li><strong>Calibrated synthetic terrain</strong><span>Atacama, McMurdo, Haughton, and Mauna Kea</span></li>
+                        <li><strong>NASADEM HGT</strong><span>Earth · imported terrain features for 49 candidate locations</span></li>
+                        <li><strong>MOLA MEGDR</strong><span>Mars · imported terrain features for 2 target records</span></li>
+                        <li><strong>Terrain features</strong><span>Slope, roughness and relief are scored; elevation remains contextual</span></li>
+                        <li><strong>Coverage</strong><span>100% for the three scored terrain features across the imported records</span></li>
                     </ul>
                     <div id="science-source-card-slot"></div>
                 </section>
                 <section class="card limitations-card" aria-labelledby="limitations-heading">
                     <div class="card-header"><div><span class="eyebrow">Scope and next steps</span><h3 id="limitations-heading">Limitations</h3></div></div>
-                    <p class="limitations-note">Main rankings use calibrated synthetic terrain and a heuristic scoring model. Real-data validation is limited and scale-sensitive. The Moon target is the lunar south pole region, not a specific Artemis III landing site.</p>
-                    <div class="next-steps"><strong>Next steps</strong><span>Use real DEMs for all candidates at one common ground resolution; use HiRISE/CTX for Mars.</span></div>
+                    <p class="limitations-note">This is a terrain-only screening score, not a landing-site safety assessment or environmental equivalence claim. Cross-body elevation is excluded because planetary datums differ.</p>
+                    <div class="next-steps"><strong>Next steps</strong><span>Add climate, geology and operational constraints only after their source provenance is validated.</span></div>
                 </section>
                 <section class="card target-sites-science-card" aria-labelledby="target-site-catalog-heading">
                     <div class="card-header">
@@ -5972,7 +5973,7 @@
                 const notice = document.getElementById('scientific-source-lock-notice');
                 const message = document.getElementById('scientific-source-lock-message');
                 if (notice && message) {
-                    message.textContent = `${target === 'earth' ? 'Earth' : target === 'moon' ? 'Moon' : 'Mars'} view selected. Scientific outputs remain locked until the official source audit passes.`;
+                    message.textContent = `${target === 'earth' ? 'Earth' : target === 'moon' ? 'Moon' : 'Mars'} view selected. The imported terrain ranking remains available; additional legacy views are paused.`;
                     notice.hidden = false;
                 }
                 return;
@@ -6494,7 +6495,7 @@
                 panel.className = 'source-locked-placeholder';
                 const eyebrow = document.createElement('span');
                 eyebrow.className = 'eyebrow';
-                eyebrow.textContent = 'Legacy scores paused';
+                eyebrow.textContent = 'Additional ranking paused';
                 const heading = document.createElement('h2');
                 heading.textContent = title;
                 const copy = document.createElement('p');
@@ -6522,8 +6523,7 @@
                 lockSection('explore-section', 'Explore Sites is waiting for verified data');
                 lockSection('validation-section', 'Validation is waiting for verified data');
                 lockSection('compare-section', 'Compare is waiting for verified data');
-                lockSection('science-section', 'Science & Data is waiting for verified inputs');
-                ['tab-map', 'tab-terrain3d', 'tab-data'].forEach(id => {
+                ['tab-map', 'tab-terrain3d'].forEach(id => {
                     const node = document.getElementById(id);
                     if (node) { node.classList.add('is-locked'); node.removeAttribute('aria-disabled'); node.tabIndex = 0; }
                 });
@@ -6540,8 +6540,7 @@
                 lockSection('explore-section', 'Explore Sites is waiting for verified data');
                 lockSection('validation-section', 'Validation is waiting for verified data');
                 lockSection('compare-section', 'Compare is waiting for verified data');
-                lockSection('science-section', 'Science & Data is waiting for verified inputs');
-                ['tab-map', 'tab-terrain3d', 'tab-data'].forEach(id => {
+                ['tab-map', 'tab-terrain3d'].forEach(id => {
                     const node = document.getElementById(id);
                     if (node) { node.classList.add('is-locked'); node.removeAttribute('aria-disabled'); node.tabIndex = 0; }
                 });

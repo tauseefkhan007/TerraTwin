@@ -41,7 +41,7 @@
     };
 
     const state = {
-        data: null, analogx: null, sourceLock: null, targetId: null, weights: { ...PRESETS.balanced }, aggregation: 'geometric',
+        data: null, analogx: null, terrain: null, sourceLock: null, targetId: null, weights: { ...PRESETS.balanced }, aggregation: 'geometric',
         category: 'all', selectedSite: null, map: null, markerLayer: null, windowLayer: null, chart: null,
     };
 
@@ -84,7 +84,7 @@
         if (!root) return;
         root.classList.toggle('is-blocked', !sourceLockReady());
         root.classList.toggle('is-ready', sourceLockReady());
-        $('gs-source-lock-badge').textContent = sourceLockReady() ? 'LEGACY RANKING READY' : 'LEGACY RANKING LOCKED';
+        $('gs-source-lock-badge').textContent = sourceLockReady() ? 'ADDITIONAL RANKING READY' : 'ADDITIONAL RANKING PAUSED';
         $('gs-source-lock-heading').textContent = sourceLockReady()
             ? 'Legacy ranking validation passed'
             : 'Legacy ranking validation is paused';
@@ -145,15 +145,33 @@
         const earth = (dataset.earth_features || []).map(row => ({ ...row, body: 'Earth' }));
         const mars = (dataset.planetary_targets || []).map(row => ({ ...row, body: 'Mars' }));
         const all = [...earth, ...mars];
+        const targetSelect = $('gs-terrain-target');
+        const terrainTargets = state.terrain?.targets || [];
+        if (targetSelect && terrainTargets.length) {
+            const previous = targetSelect.value;
+            targetSelect.replaceChildren(...terrainTargets.map(target => el('option', { value: target.id, text: target.name })));
+            targetSelect.value = terrainTargets.some(target => target.id === previous) ? previous : terrainTargets[0].id;
+        }
+        const selectedTargetId = targetSelect?.value || terrainTargets[0]?.id;
+        const target = terrainTargets.find(item => item.id === selectedTargetId);
+        const targetRows = selectedTargetId ? (state.terrain?.rankings?.[selectedTargetId] || []) : [];
+        const rankedByName = new Map(targetRows.map(row => [row.site_name, row]));
+        const enriched = all.map(row => ({ ...row, ranking: row.body === 'Earth' ? rankedByName.get(row.name) : null }));
         const filter = ($('gs-analogx-filter')?.value || '').trim().toLowerCase();
         const selectedBody = $('gs-analogx-body')?.value || 'all';
-        const rows = all.filter(row => (selectedBody === 'all' || row.body === selectedBody) &&
+        const rows = enriched.filter(row => (selectedBody === 'all' || row.body === selectedBody) &&
             (!filter || `${row.name} ${row.region || ''} ${row.country || ''}`.toLowerCase().includes(filter)));
-        summary.textContent = `${all.length} records loaded: ${earth.length} Earth terrain records and ${mars.length} Mars targets. Raw-cache inventory: ${dataset.counts?.raw_hgt_tiles || 0} HGT tiles and ${dataset.counts?.raw_zip_caches || 0} ZIP caches.`;
+        rows.sort((left, right) => {
+            if (left.body !== right.body) return left.body === 'Earth' ? -1 : 1;
+            return (right.ranking?.score || -1) - (left.ranking?.score || -1);
+        });
+        summary.textContent = `${all.length} records loaded: ${earth.length} Earth terrain records and ${mars.length} Mars targets. Terrain score compares slope, roughness and relief against ${target?.name || 'the selected target'}; coverage 100%.`;
         const number = value => Number.isFinite(Number(value)) ? Number(value).toFixed(2) : '—';
         body.replaceChildren(...rows.map(row => el('tr', {}, [
+            el('td', { class: 'gs-num', text: row.ranking?.rank ? String(row.ranking.rank) : '—' }),
             el('td', { text: row.body }),
             el('td', { text: row.name || row.region || row.id }),
+            el('td', { class: 'gs-num', text: row.ranking?.score ? number(row.ranking.score) : 'reference' }),
             el('td', { class: 'gs-num', text: number(row.lat) }),
             el('td', { class: 'gs-num', text: number(row.lon) }),
             el('td', { class: 'gs-num', text: number(row.elevation) }),
@@ -161,7 +179,7 @@
             el('td', { class: 'gs-num', text: number(row.roughness) }),
             el('td', { class: 'gs-num', text: number(row.relief) }),
         ])));
-        if (!rows.length) body.append(el('tr', {}, [el('td', { colspan: '8', text: 'No repository records match this filter.' })]));
+        if (!rows.length) body.append(el('tr', {}, [el('td', { colspan: '10', text: 'No terrain records match this filter.' })]));
     }
 
     function rankedRows() {
@@ -585,14 +603,16 @@
         const root = $('global-tab');
         if (!root) return;
         try {
-            const [resultsResponse, lockResponse, analogxResponse] = await Promise.all([
+            const [resultsResponse, lockResponse, analogxResponse, terrainResponse] = await Promise.all([
                 fetch('global_results.json', { cache: 'no-store' }),
                 fetch('source_lock.json', { cache: 'no-store' }),
                 fetch('analogx_dataset.json', { cache: 'no-store' }),
+                fetch('terrain_rankings.json', { cache: 'no-store' }),
             ]);
             if (!resultsResponse.ok) throw new Error(`global_results.json HTTP ${resultsResponse.status}`);
             state.data = await resultsResponse.json();
             state.analogx = analogxResponse.ok ? await analogxResponse.json() : null;
+            state.terrain = terrainResponse.ok ? await terrainResponse.json() : null;
             state.sourceLock = lockResponse.ok ? await lockResponse.json() : {
                 ready: false,
                 status: 'blocked_missing_audit',
@@ -606,10 +626,12 @@
         }
         window.__terratwinSourceLock = state.sourceLock;
         window.__nakshAnalogX = state.analogx;
+        window.__nakshTerrainRankings = state.terrain;
         renderSourceLock();
         renderAnalogXDataset();
         $('gs-analogx-filter')?.addEventListener('input', renderAnalogXDataset);
         $('gs-analogx-body')?.addEventListener('change', renderAnalogXDataset);
+        $('gs-terrain-target')?.addEventListener('change', renderAnalogXDataset);
         renderHome();
         if (!sourceLockReady()) return;
         state.targetId = state.data.targets[0].id;
