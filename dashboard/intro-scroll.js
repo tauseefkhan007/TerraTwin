@@ -21,6 +21,8 @@
 
     const CTA_AT = 0.86;      // scroll progress at which the call to action appears
     const EASE = 0.16;        // smoothing between scroll position and video time
+    const IDLE_DELAY = 520;   // wait briefly after scrolling stops before playing
+    const IDLE_RATE = 0.22;   // slow cinematic playback rate while the visitor pauses
     const reducedMotion = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 
     let duration = 0;
@@ -31,6 +33,7 @@
     let ready = false;
     let failed = false;
     let primed = false;
+    let idleTimer = 0;
 
     function pickSource() {
         return 'assets/video/naksh-intro-scrub.mp4';
@@ -85,6 +88,31 @@
         }
     }
 
+    function stopIdlePlayback() {
+        if (idleTimer) {
+            window.clearTimeout(idleTimer);
+            idleTimer = 0;
+        }
+        if (!video.paused) video.pause();
+        video.playbackRate = 1;
+    }
+
+    function startIdlePlayback() {
+        idleTimer = 0;
+        if (failed || reducedMotion || landing.hidden || !ready || !duration || !primed || video.ended) return;
+        current = target;
+        applyFrame();
+        video.playbackRate = IDLE_RATE;
+        const playback = video.play();
+        if (playback && typeof playback.catch === 'function') playback.catch(function () { /* autoplay may still be blocked */ });
+    }
+
+    function scheduleIdlePlayback() {
+        if (failed || reducedMotion || !primed) return;
+        if (idleTimer) window.clearTimeout(idleTimer);
+        idleTimer = window.setTimeout(startIdlePlayback, IDLE_DELAY);
+    }
+
     function paintUi() {
         if (hint) hint.style.opacity = String(Math.max(0, 1 - target * 28));
         if (railFill) railFill.style.transform = 'scaleY(' + target.toFixed(4) + ')';
@@ -101,9 +129,11 @@
 
     function onScroll() {
         if (failed || reducedMotion) return;
+        stopIdlePlayback();
         target = scrollProgress();
         paintUi();
         if (!raf) raf = window.requestAnimationFrame(tick);
+        scheduleIdlePlayback();
     }
 
     // iOS/Safari only let a video seek reliably after a user gesture has "touched" it.
@@ -148,6 +178,20 @@
     video.addEventListener('loadeddata', function () { updateLoadProgress(); showEndFrame(); window.setTimeout(hideLoader, 2500); });
     video.addEventListener('canplay', showEndFrame);
     video.addEventListener('canplaythrough', hideLoader);
+    video.addEventListener('timeupdate', function () {
+        if (video.paused || failed || reducedMotion || !duration) return;
+        target = Math.min(1, Math.max(0, video.currentTime / duration));
+        current = target;
+        wantedTime = video.currentTime;
+        paintUi();
+    });
+    video.addEventListener('ended', function () {
+        video.pause();
+        video.playbackRate = 1;
+        target = 1;
+        current = 1;
+        paintUi();
+    });
     video.addEventListener('seeked', function () {
         if (Math.abs(video.currentTime - wantedTime) > 0.012) applyFrame();
     });
@@ -161,6 +205,7 @@
 
     if (missionBtn && mission) {
         missionBtn.addEventListener('click', function () {
+            prime();
             landing.scrollTo({ top: mission.offsetTop, behavior: reducedMotion ? 'auto' : 'smooth' });
         });
     }
@@ -168,6 +213,7 @@
     // When the landing is shown again (log out) restart from the beginning of the journey.
     new MutationObserver(function () {
         if (!landing.hidden) {
+            stopIdlePlayback();
             landing.scrollTop = 0;
             target = 0;
             current = 0;
