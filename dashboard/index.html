@@ -2840,8 +2840,8 @@
 
             <section class="content-section" id="explore-section" aria-labelledby="explore-heading">
                 <div class="section-heading">
-                    <div><span class="eyebrow">Synthetic-terrain demo (v1)</span><h2 id="explore-heading">Explore Sites</h2></div>
-                    <p>Original five-site demo on calibrated synthetic terrain. See Global Search for the real-data ranking.</p>
+                    <div><span class="eyebrow">Body-specific map explorer</span><h2 id="explore-heading">Explore Sites</h2></div>
+                    <p>Earth shows candidate analog records; Moon and Mars show their own named target-region catalogues and source context.</p>
                 </div>
             <div class="layout-grid">
                 <!-- Map and Details -->
@@ -3577,8 +3577,18 @@
             return currentView === 'earth' ? currentTarget : currentView;
         }
 
+        function getPlanetaryTargetSites(body = currentView) {
+            if (!['moon', 'mars'].includes(body)) return [];
+            return (targetSiteCatalog?.target_sites || [])
+                .filter(site => site.body?.toLowerCase() === body);
+        }
+
+        function getActiveMapRecords(body = currentView) {
+            return body === 'earth' ? getVisibleSites() : getPlanetaryTargetSites(body);
+        }
+
         function getTargetSiteById(siteId) {
-            return targetSiteCatalog?.target_sites.find(site => site.id === siteId) || null;
+            return targetSiteCatalog?.target_sites?.find(site => site.id === siteId) || null;
         }
 
         function formatApproxTargetCoordinates(site) {
@@ -3779,6 +3789,8 @@
             }
             updateTargetSiteHighlights();
             updateSiteNavigationControls();
+            updatePlanetaryNavigatorState(currentView);
+            renderMapMarkers();
         }
 
         function organizeDashboardSections() {
@@ -4076,11 +4088,13 @@
             const selectedNote = document.getElementById('stat-selected-note');
             const leader = document.getElementById('stat-leader');
             const leaderScore = document.getElementById('stat-leader-score');
-            if (count) count.textContent = `${analogSites.length} sites`;
-            if (target) target.textContent = String(RADAR_KEYS.length);
-            if (targetNote) targetNote.textContent = 'terrain metrics';
-            if (selected) selected.textContent = String(Object.keys(scoreResults).length);
-            if (selectedNote) selectedNote.textContent = 'Moon · Mars targets';
+            const activeRecords = getActiveMapRecords();
+            const bodyName = currentView === 'earth' ? 'Earth analog' : PLANETARY_SURFACES[currentView].name;
+            if (count) count.textContent = `${activeRecords.length} ${currentView === 'earth' ? 'sites' : `${bodyName} targets`}`;
+            if (target) target.textContent = currentView === 'earth' ? String(RADAR_KEYS.length) : 'Named sites';
+            if (targetNote) targetNote.textContent = currentView === 'earth' ? 'terrain metrics' : 'catalogue records';
+            if (selected) selected.textContent = currentView === 'earth' ? 'Earth' : bodyName;
+            if (selectedNote) selectedNote.textContent = currentView === 'earth' ? 'browse mode' : 'planetary target mode';
 
             const top = scoreResults[currentTarget]?.rankings?.find(result => result.rank === 1);
             if (top || scoreResultsLoadError) leader?.classList.remove('json-loading-skeleton');
@@ -4113,7 +4127,9 @@
 
         function updateAciTierLegend() {
             const title = document.getElementById('aci-tier-legend-title');
-            if (title) title.textContent = `${currentTarget === 'moon' ? 'Moon' : 'Mars'} demo ACI tiers`;
+            if (title) title.textContent = currentView === 'earth'
+                ? 'Earth candidate markers'
+                : `${PLANETARY_SURFACES[currentView].name} target markers`;
         }
 
         function loadCesiumLibrary() {
@@ -4518,19 +4534,20 @@
             const mapEyebrow = document.querySelector('.map-heading-overlay > span:first-child');
             const siteLegend = document.querySelector('.map-frame > .map-legend');
             if (!PLANETARY_SURFACES[body]) return;
+            const targetCount = getPlanetaryTargetSites(body).length;
             if (body === 'earth') {
                 if (mapEyebrow) mapEyebrow.textContent = 'Earth analog network';
                 if (mapHeading) mapHeading.textContent = 'Candidate field sites';
                 if (siteLegend) siteLegend.hidden = false;
-                if (imageryStatus) imageryStatus.innerHTML = 'EARTH · LOCAL 3D GLOBE<br>49 imported terrain records';
+                if (imageryStatus) imageryStatus.innerHTML = `EARTH · LOCAL 3D GLOBE<br>${analogSites.length} Earth candidate records`;
                 return;
             }
             if (mapEyebrow) mapEyebrow.textContent = body === 'moon' ? 'LUNAR TARGET GLOBE' : 'MARTIAN TARGET GLOBE';
             if (mapHeading) mapHeading.textContent = body === 'moon' ? 'Lunar surface' : 'Martian surface';
             if (siteLegend) siteLegend.hidden = true;
             if (imageryStatus) imageryStatus.innerHTML = body === 'moon'
-                ? 'MOON · LRO WAC REFERENCE<br>Named target landmarks'
-                : 'MARS · MOLA / VIKING REFERENCE<br>Named target landmarks';
+                ? `MOON · LRO WAC REFERENCE<br>${targetCount} named target regions`
+                : `MARS · MOLA / VIKING REFERENCE<br>${targetCount} named target regions`;
         }
 
         function renderThreePlanetLandmarks(body) {
@@ -4827,7 +4844,7 @@
                 setMapNotice('');
                 updateDetailedMapControls();
                 renderMapMarkers();
-                updateMapState(getVisibleSites().length);
+                updateMapState(getActiveMapRecords().length);
                 updateCesiumMapState();
                 scheduleMapResize();
                 document.addEventListener('visibilitychange', handleEarthGlobeVisibility);
@@ -5375,6 +5392,7 @@
             mapContainer.setAttribute('aria-label', earthAvailable
                 ? 'Interactive Earth surface and terrestrial analog candidate locations'
                 : `Interactive 3D ${bodyName} surface with source-verified named landmarks`);
+            document.getElementById('globe-controls')?.setAttribute('aria-label', `${bodyName} globe controls`);
             if (detailedButton) {
                 detailedButton.disabled = !earthAvailable;
                 detailedButton.setAttribute('aria-pressed', String(detailedMapMode));
@@ -5628,7 +5646,7 @@
             renderMapMarkers();
         }
 
-        function updateMapState(visibleCount = getVisibleSites().length) {
+        function updateMapState(visibleCount = getActiveMapRecords().length) {
             const mapState = document.getElementById('map-state');
             if (!mapState) return;
             if (!mapReady) {
@@ -5637,7 +5655,9 @@
                     : 'Loading map tiles…';
                 mapState.hidden = false;
             } else if (visibleCount === 0) {
-                mapState.textContent = 'No candidate locations match the current filters.';
+                mapState.textContent = currentView === 'earth'
+                    ? 'No Earth candidate locations match the current filters.'
+                    : `No named ${PLANETARY_SURFACES[currentView].name} target regions are available.`;
                 mapState.hidden = false;
             } else {
                 mapState.hidden = true;
@@ -5651,7 +5671,7 @@
                 markers = [];
                 if (currentView === 'earth') renderCesiumMarkers(visibleSites);
                 else clearCesiumSiteEntities();
-                updateMapState(visibleSites.length);
+                updateMapState(getActiveMapRecords().length);
                 return;
             }
             if (map && detailedMapMode && currentView === 'earth') {
@@ -5671,7 +5691,7 @@
                     marker.on('click', () => selectSite(site));
                     markers.push(marker);
                 });
-                updateMapState(visibleSites.length);
+                updateMapState(getActiveMapRecords().length);
                 return;
             }
             if (earthRenderer) {
@@ -5681,12 +5701,30 @@
                     clearThreeGlobeMarkers();
                     renderThreePlanetLandmarks(currentView);
                 }
-                updateMapState(visibleSites.length);
+                updateMapState(getActiveMapRecords().length);
                 return;
             }
             if (!map) return;
             markers.forEach(m => map.removeLayer(m));
             markers = [];
+
+            if (currentView !== 'earth') {
+                const targetSites = getPlanetaryTargetSites();
+                targetSites.forEach(site => {
+                    const marker = L.circleMarker([site.lat, site.lon], {
+                        radius: 8,
+                        fillColor: currentView === 'moon' ? '#83def2' : '#f0a067',
+                        color: '#f6fbff',
+                        weight: 1.8,
+                        fillOpacity: 0.9,
+                    }).addTo(map);
+                    marker.bindPopup(`<b>${site.name}</b><br>${site.body} target region<br>${formatApproxTargetCoordinates(site)}<br>${site.short_description}`);
+                    marker.on('click', () => selectTargetSite(site.id, false));
+                    markers.push(marker);
+                });
+                updateMapState(targetSites.length);
+                return;
+            }
 
             visibleSites.forEach(site => {
                 const score = getRealScore(site, currentTarget);
@@ -5705,7 +5743,7 @@
                 marker.on('click', () => selectSite(site));
                 markers.push(marker);
             });
-            updateMapState(visibleSites.length);
+            updateMapState(getActiveMapRecords().length);
         }
 
         // RADAR CHART - real sub-scores (0-100 similarity per metric) vs. a perfect-match baseline of 100
@@ -6190,8 +6228,12 @@
             updateSiteNavigationControls();
             const count = document.getElementById('candidate-count');
             const rankingTarget = document.getElementById('ranking-target');
-            if (count) count.textContent = `${visibleSites.length} of ${analogSites.length} sites`;
-            if (rankingTarget) rankingTarget.textContent = `${currentTarget === 'moon' ? 'Moon' : 'Mars'} target${currentView === 'earth' ? ' · Earth browse' : ''}`;
+            if (count) count.textContent = currentView === 'earth'
+                ? `${visibleSites.length} of ${analogSites.length} Earth analogs`
+                : `${visibleSites.length} Earth analogs · ${currentTarget === 'moon' ? 'Moon' : 'Mars'} target`;
+            if (rankingTarget) rankingTarget.textContent = currentView === 'earth'
+                ? `${currentTarget === 'moon' ? 'Moon' : 'Mars'} comparison · Earth browse`
+                : `${currentTarget === 'moon' ? 'Moon' : 'Mars'} target · Earth analog ranking`;
             const provenance = document.getElementById('leaderboard-provenance');
             if (provenance) provenance.textContent = scoreResultsLoadError
                     ? 'Python ACI results could not be loaded.'
@@ -6879,9 +6921,9 @@
                     };
                 });
                 analogSites = analogSites.filter(site => !site.id.startsWith('terrain-')).concat(importedTerrainSites);
+                updatePlanetaryNavigatorState(currentView);
                 if (importedTerrainSites.length) {
                     selectedSite = importedTerrainSites[0];
-                    currentView = 'earth';
                 }
                 const targets = rankings.targets || [];
                 const jezero = rankings.rankings?.['mars-jezero'] || [];
