@@ -20,9 +20,11 @@
     const mission = document.getElementById('tt-intro-mission');
 
     const CTA_AT = 0.86;      // scroll progress at which the call to action appears
-    const EASE = 0.16;        // smoothing between scroll position and video time
+    const EASE = 0.28;        // faster catch-up keeps the scroll response close to 60/65 Hz
     const IDLE_DELAY = 520;   // wait briefly after scrolling stops before playing
-    const IDLE_RATE = 0.22;   // slow cinematic playback rate while the visitor pauses
+    const IDLE_RATE = 0.65;   // moderate slow motion without making the intro feel sluggish
+    const SEEK_THRESHOLD = 0.025;
+    const FAST_SEEK_THRESHOLD = 0.75;
     const reducedMotion = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 
     let duration = 0;
@@ -83,7 +85,11 @@
         if (!ready || !duration) return;
         // Stay just inside the last frame so the video never flips to its ended state.
         wantedTime = Math.min(duration - 0.04, Math.max(0, current * duration));
-        if (!video.seeking && Math.abs(video.currentTime - wantedTime) > 0.012) {
+        const distance = Math.abs(video.currentTime - wantedTime);
+        if (video.seeking || distance <= SEEK_THRESHOLD) return;
+        if (distance >= FAST_SEEK_THRESHOLD && typeof video.fastSeek === 'function') {
+            video.fastSeek(wantedTime);
+        } else {
             video.currentTime = wantedTime;
         }
     }
@@ -193,7 +199,7 @@
         paintUi();
     });
     video.addEventListener('seeked', function () {
-        if (Math.abs(video.currentTime - wantedTime) > 0.012) applyFrame();
+        if (Math.abs(video.currentTime - wantedTime) > SEEK_THRESHOLD) applyFrame();
     });
     video.addEventListener('error', function () { fail(); });
 
