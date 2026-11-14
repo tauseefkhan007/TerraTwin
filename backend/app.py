@@ -1,4 +1,4 @@
-"""Small OAuth backend for the TerraTwin static dashboard.
+"""Small OAuth backend for the NAKSH static dashboard.
 
 Run locally with:
     uvicorn backend.app:app --host 127.0.0.1 --port 8001
@@ -55,7 +55,7 @@ PROVIDERS: dict[str, dict[str, Any]] = {
     },
 }
 
-app = FastAPI(title="TerraTwin Auth API", version="0.1.0")
+app = FastAPI(title="NAKSH Auth API", version="0.1.0")
 app.add_middleware(
     CORSMiddleware,
     allow_origins=[FRONTEND_URL],
@@ -208,7 +208,7 @@ def finish_auth(provider: str, request: Request, code: str | None = None, state:
             raise RuntimeError("OAuth provider returned no access token")
         user_response = requests.get(
             config["userinfo_url"],
-            headers={"Authorization": f"Bearer {token}", "Accept": "application/json", "User-Agent": "TerraTwin/0.1"},
+            headers={"Authorization": f"Bearer {token}", "Accept": "application/json", "User-Agent": "NAKSH/0.1"},
             timeout=15,
         )
         user_response.raise_for_status()

@@ -1,4 +1,4 @@
-/* TerraTwin landing interaction and OAuth-backed authentication gate. */
+/* NAKSH landing interaction and OAuth-backed authentication gate. */
 (function () {
     'use strict';
 
@@ -24,6 +24,11 @@
 
     function openAuth() {
         if (landing.hidden || !auth.hidden) return;
+        const saved = sessionStorage.getItem('terratwin-authenticated');
+        if (saved === 'demo' || saved === 'oauth') {
+            unlockSession(saved);
+            return;
+        }
         auth.hidden = false;
         landing.setAttribute('aria-hidden', 'true');
         document.body.classList.add('tt-landing-locked');
@@ -78,7 +83,7 @@
             const next = encodeURIComponent(window.location.href.split('?')[0]);
             window.location.assign(`${apiBase}/auth/${provider}?next_url=${next}`);
         } catch (error) {
-            setStatus('The TerraTwin auth service is offline. Start the backend on port 8001, or use demo access.');
+            setStatus('The NAKSH auth service is offline. Start the backend on port 8001, or use demo access.');
         }
     }
 
@@ -93,9 +98,10 @@
         }
     }
 
-    landing.tabIndex = -1;
-    landing.addEventListener('pointerdown', openAuth, { passive: true });
+    landing.tabIndex = 0;
+    landing.querySelectorAll('[data-tt-enter]').forEach(button => button.addEventListener('click', openAuth));
     landing.addEventListener('keydown', event => {
+        if (event.target !== landing) return;
         if (event.key === 'Enter' || event.key === ' ') {
             event.preventDefault();
             openAuth();

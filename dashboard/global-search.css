@@ -1,4 +1,4 @@
-/* TerraTwin global analog search tab. Scoped under #global-tab; reuses the dashboard colour tokens. */
+/* NAKSH global analog search tab. Scoped under #global-tab; reuses the dashboard colour tokens. */
 #global-tab .gs-stat-grid { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 10px; }
 #global-tab .gs-stat { display: grid; gap: 5px; align-content: start; padding: 13px; border: 1px solid rgba(61, 143, 194, 0.4); border-radius: 14px; background: linear-gradient(145deg, rgba(10, 34, 59, 0.88), rgba(4, 16, 33, 0.9)); min-width: 0; }
 #global-tab .gs-stat h3 { font-size: 0.62rem; letter-spacing: 0.08em; text-transform: uppercase; color: var(--text-faint); }

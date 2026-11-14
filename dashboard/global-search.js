@@ -1,4 +1,4 @@
-/* TerraTwin global analog search: ranking, evidence, coverage and guardrails from global_results.json. */
+/* NAKSH global analog search: ranking, evidence, coverage and guardrails from global_results.json. */
 (function () {
     'use strict';
 
@@ -507,7 +507,7 @@
         const marsAucAll = mean(validation.per_target.filter(r => !/shackleton|malapert/.test(r.target_id)).map(r => r.auc_aci));
         const weights = method.dimension_weights;
         const items = [
-            'Source lock: this imported baseline is for development only. Final TerraTwin evidence must be re-run from datasets listed on the official NASA Space Apps 2026 Resources tab.',
+            'Source lock: this imported baseline is for development only. Final NAKSH evidence must be re-run from datasets listed on the official NASA Space Apps 2026 Resources tab.',
             `Default weights: terrain ${weights.terrain}, environment ${weights.environment}, geology ${weights.geology}; combined as a weighted geometric mean so a site must be adequate on every dimension. The additive mean is available from the controls.`,
             `Negative controls (${validation.control_sites.length} regions: plains, rainforest, glaciated and monsoon mountains) separate from analog candidates with AUC ${validation.mean_auc_aci.toFixed(2)} on average (additive mean: ${validation.mean_auc_aci_additive.toFixed(2)}; terrain alone ${validation.mean_auc_terrain.toFixed(2)}; environment alone ${validation.mean_auc_environment.toFixed(2)}; geology alone ${validation.mean_auc_geology.toFixed(2)}).`,
             `Lunar polar terrain is rugged, so steep mountain controls match its slope statistics. Terrain alone cannot reject them; environment and geology do, but Moon separation (AUC ${moonAuc.toFixed(2)}) is weaker than Mars (${marsAucAll.toFixed(2)}). Treat Moon rankings as hypotheses.`,
