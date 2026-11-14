@@ -2270,6 +2270,96 @@
             .site-photo-gallery,
             .site-photo-open img { transition: none; }
         }
+
+        /* Full-width workspace navigation: tabs stay visible across the top. */
+        .dashboard-shell {
+            display: block !important;
+            width: 100%;
+            max-width: none;
+        }
+        .dashboard-main {
+            width: 100%;
+            min-width: 0;
+        }
+        .workspace-sidebar {
+            position: sticky !important;
+            top: 0;
+            z-index: 999;
+            display: flex !important;
+            flex-direction: row !important;
+            align-items: center;
+            width: 100%;
+            min-height: 54px;
+            padding: 6px clamp(14px, 2vw, 28px);
+            overflow: hidden;
+            border: 0;
+            border-bottom: 1px solid rgba(53, 133, 190, 0.45);
+            background: rgba(3, 14, 29, 0.96);
+            backdrop-filter: blur(14px);
+        }
+        .workspace-sidebar .sidebar-brand,
+        .workspace-sidebar .mobile-menu-toggle,
+        .workspace-sidebar .sidebar-quote,
+        .workspace-sidebar .sidebar-status {
+            display: none !important;
+        }
+        .workspace-sidebar .nav-tabs {
+            position: static !important;
+            display: flex !important;
+            flex: 1 1 auto;
+            flex-direction: row !important;
+            align-items: center;
+            width: auto;
+            height: auto;
+            min-width: 0;
+            padding: 0;
+            overflow-x: auto;
+            overflow-y: hidden;
+            border: 0;
+            background: transparent;
+            scrollbar-width: none;
+        }
+        .workspace-sidebar .nav-tabs::-webkit-scrollbar { display: none; }
+        .workspace-sidebar .tab-btn {
+            flex: 0 0 auto;
+            justify-content: center;
+            width: auto;
+            min-width: max-content;
+            min-height: 40px;
+            padding: 9px 14px;
+            border: 0;
+            border-bottom: 2px solid transparent;
+            border-radius: 0;
+            background: transparent;
+        }
+        .workspace-sidebar .tab-btn.active,
+        .workspace-sidebar .tab-btn[aria-selected="true"] {
+            border: 0;
+            border-bottom: 2px solid #4ed7f5;
+            background: transparent;
+        }
+        .workspace-sidebar .sidebar-logout {
+            flex: 0 0 auto;
+            width: auto;
+            margin: 0 0 0 12px;
+            padding: 8px 12px;
+        }
+        @media (max-width: 600px) {
+            .workspace-sidebar {
+                min-height: 48px;
+                padding: 4px 8px;
+            }
+            .workspace-sidebar .tab-btn {
+                min-height: 38px;
+                padding: 8px 10px;
+                font-size: 0.63rem;
+            }
+            .workspace-sidebar .sidebar-logout {
+                margin-left: 6px;
+                padding: 7px 9px;
+                font-size: 0.62rem;
+            }
+        }
     </style>
 </head>
 <body>
