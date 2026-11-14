@@ -2386,9 +2386,12 @@
         .workspace-sidebar .tab-btn { display: flex; flex: 1 1 0 !important; width: auto !important; min-width: 0 !important; min-height: 38px; align-items: center; justify-content: center; gap: 7px; padding: 8px 10px !important; border: 1px solid transparent !important; border-radius: 9px !important; color: #8fa8bb; font-size: .68rem; font-weight: 650; letter-spacing: .01em; transition: background 160ms ease, border-color 160ms ease, color 160ms ease, transform 160ms ease; }
         .workspace-sidebar .tab-btn:hover { color: #e9f8ff; background: rgba(30, 86, 126, .24); border-color: rgba(91, 171, 211, .24) !important; transform: translateY(-1px); }
         .workspace-sidebar .tab-btn.active, .workspace-sidebar .tab-btn[aria-selected="true"] { color: #edfbff; background: linear-gradient(180deg, rgba(33, 111, 151, .48), rgba(16, 64, 98, .42)); border-color: rgba(91, 210, 238, .52) !important; box-shadow: inset 0 1px 0 rgba(255, 255, 255, .08), 0 5px 16px rgba(15, 101, 143, .14); }
-        .workspace-sidebar .tab-btn.is-locked { opacity: .38; cursor: not-allowed; pointer-events: none; }
+        .workspace-sidebar .tab-btn.is-locked { opacity: .48; cursor: pointer; }
         .workspace-sidebar .nav-icon { width: 15px; height: 15px; opacity: .82; }
-        .workspace-sidebar .sidebar-logout { margin-left: 2px; border-radius: 8px; }
+        .workspace-sidebar .sidebar-logout { display: inline-flex; flex: 0 0 auto; align-items: center; justify-content: center; gap: 7px; min-height: 34px; margin-left: 2px; padding: 8px 13px !important; border: 1px solid rgba(240, 160, 120, .38); border-radius: 999px; background: linear-gradient(180deg, rgba(119, 55, 45, .32), rgba(61, 29, 31, .42)); color: #ffd8cb; font-size: .64rem; font-weight: 700; letter-spacing: .02em; box-shadow: inset 0 1px 0 rgba(255, 255, 255, .06); transition: border-color 160ms ease, background 160ms ease, color 160ms ease, transform 160ms ease, box-shadow 160ms ease; }
+        .workspace-sidebar .sidebar-logout svg { width: 14px; height: 14px; fill: none; stroke: currentColor; stroke-width: 1.8; stroke-linecap: round; stroke-linejoin: round; }
+        .workspace-sidebar .sidebar-logout:hover { border-color: rgba(255, 177, 139, .82); background: linear-gradient(180deg, rgba(150, 67, 52, .5), rgba(84, 35, 37, .6)); color: #fff1eb; transform: translateY(-1px); box-shadow: 0 5px 14px rgba(87, 29, 27, .28); }
+        .workspace-sidebar .sidebar-logout:focus-visible { outline: 2px solid #ffd783; outline-offset: 2px; }
         @media (max-width: 760px) {
             .workspace-sidebar { gap: 7px; padding: 5px 8px !important; }
             .workspace-sidebar .nav-tabs { grid-template-columns: repeat(5, minmax(112px, 1fr)); overflow-x: auto; scrollbar-width: none; }
@@ -2465,7 +2468,7 @@
         </nav>
         <blockquote class="sidebar-quote">“From Earth evidence to planetary mission readiness.”<cite>TerraTwin project tagline</cite></blockquote>
         <div class="sidebar-status" role="status"><strong>Evidence-first prototype</strong><span>Official challenge source lock in progress<br>Measured data stays separate from priors</span></div>
-        <button type="button" class="sidebar-logout" id="terratwin-logout" hidden>Log out</button>
+        <button type="button" class="sidebar-logout" id="terratwin-logout" hidden><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M10 4H5.5A1.5 1.5 0 0 0 4 5.5v13A1.5 1.5 0 0 0 5.5 20H10"/><path d="M13 8l4 4-4 4M8 12h9"/></svg><span>Log out</span></button>
     </aside>
 
     <div class="dashboard-main">
@@ -3663,6 +3666,14 @@
         }
 
         function navigateToDashboardSection(sectionId, paneId, navButtonId) {
+            const lockedScientificTab = ['tab-map', 'tab-terrain3d', 'tab-data'].includes(navButtonId)
+                && window.__terratwinSourceLock?.ready !== true;
+            if (lockedScientificTab) {
+                switchTab('global-tab', 'tab-global');
+                const notice = document.getElementById('scientific-source-lock-notice');
+                notice?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                return;
+            }
             switchTab(paneId, navButtonId);
             const section = document.getElementById(sectionId);
             if (!section) return;
@@ -6348,7 +6359,7 @@
                 });
                 ['tab-map', 'tab-terrain3d', 'tab-data'].forEach(id => {
                     const node = document.getElementById(id);
-                    if (node) { node.classList.add('is-locked'); node.setAttribute('aria-disabled', 'true'); node.tabIndex = -1; }
+                    if (node) { node.classList.add('is-locked'); node.removeAttribute('aria-disabled'); node.tabIndex = 0; }
                 });
                 ['site-score-box', 'site-metrics', 'validation-content'].forEach(id => {
                     const node = document.getElementById(id);
@@ -6366,7 +6377,7 @@
                 });
                 ['tab-map', 'tab-terrain3d', 'tab-data'].forEach(id => {
                     const node = document.getElementById(id);
-                    if (node) { node.classList.add('is-locked'); node.setAttribute('aria-disabled', 'true'); node.tabIndex = -1; }
+                    if (node) { node.classList.add('is-locked'); node.removeAttribute('aria-disabled'); node.tabIndex = 0; }
                 });
                 return false;
             }
