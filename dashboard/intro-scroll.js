@@ -161,6 +161,8 @@
         if (!isFinite(duration) || duration <= 0) { fail('invalid duration'); return; }
         ready = true;
         video.pause();
+        video.defaultPlaybackRate = 1;
+        video.playbackRate = 1;
         if (reducedMotion) {
             // No scrubbing: show the closing frame and the call to action immediately.
             landing.classList.add('tt-intro-static');
