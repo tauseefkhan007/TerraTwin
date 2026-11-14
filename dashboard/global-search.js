@@ -84,7 +84,7 @@
         if (!root) return;
         root.classList.toggle('is-blocked', !sourceLockReady());
         root.classList.toggle('is-ready', sourceLockReady());
-        $('gs-source-lock-badge').textContent = sourceLockReady() ? 'SOURCE LOCK READY' : 'SOURCE LOCK BLOCKED';
+        $('gs-source-lock-badge').textContent = sourceLockReady() ? 'LEGACY RANKING READY' : 'LEGACY RANKING LOCKED';
         $('gs-source-lock-heading').textContent = sourceLockReady()
             ? 'Official Resources-tab source lock passed'
             : 'Official Resources-tab source lock is blocking the ranking';
