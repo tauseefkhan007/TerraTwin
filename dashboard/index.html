@@ -2137,7 +2137,12 @@
         .tt-world.earth::after { content: ''; position: absolute; inset: 25px 36px 40px 18px; border-radius: 57% 42% 63% 32%; background: #85be89; opacity: .78; transform: rotate(-20deg); }
         .tt-world.moon { top: 0; left: 50%; width: 34px; height: 34px; color: rgba(219, 231, 238, .42); background: radial-gradient(circle at 31% 25%, #fff, #a6b6be 64%, #566572); transform: translate(-50%, -50%); }
         .tt-world.mars { top: 50%; right: -3px; width: 43px; height: 43px; color: rgba(240, 160, 103, .48); background: radial-gradient(circle at 31% 25%, #ffd4a8, #c6654f 60%, #6d3437); transform: translate(50%, -50%); }
-        .tt-world-label { position: absolute; top: calc(100% + 8px); left: 50%; color: var(--text-main); font-size: .68rem; font-weight: 800; letter-spacing: .08em; text-transform: uppercase; transform: translateX(-50%); white-space: nowrap; }
+        .tt-world-label { display: none; }
+        .tt-static-labels { position: absolute; z-index: 5; inset: 0; pointer-events: none; color: var(--text-main); font-size: .68rem; font-weight: 800; letter-spacing: .08em; text-transform: uppercase; }
+        .tt-static-label { position: absolute; padding: 3px 6px; border: 1px solid rgba(104, 215, 238, .28); border-radius: 999px; background: rgba(4, 16, 31, .82); box-shadow: 0 3px 12px rgba(0, 0, 0, .24); white-space: nowrap; }
+        .tt-static-label.earth { left: 50%; bottom: 18%; transform: translateX(-50%); }
+        .tt-static-label.moon { left: 70%; top: 26%; color: #e6eef2; }
+        .tt-static-label.mars { right: 0; top: 43%; color: #ffd0b2; border-color: rgba(240, 160, 103, .38); }
         .tt-connection { position: absolute; left: 19%; top: 67%; width: 63%; border-top: 1px dashed rgba(104, 215, 238, .32); transform: rotate(-18deg); }
         @keyframes tt-orbit-spin { to { transform: translate(-50%, -50%) rotate(360deg); } }
         @keyframes tt-orbit-spin-reverse { to { transform: translate(-50%, -50%) rotate(-381deg); } }
@@ -2442,9 +2447,14 @@
                     </div>
                     <div class="terratwin-cosmos" aria-label="Animated Earth, Moon and Mars system">
                         <span class="tt-connection" aria-hidden="true"></span>
-                        <span class="tt-orbit moon" aria-hidden="true"><span class="tt-world moon"><span class="tt-world-label">Moon</span></span></span>
-                        <span class="tt-orbit mars" aria-hidden="true"><span class="tt-world mars"><span class="tt-world-label">Mars</span></span></span>
-                        <span class="tt-world earth"><span class="tt-world-label">Earth</span></span>
+                        <span class="tt-orbit moon" aria-hidden="true"><span class="tt-world moon"></span></span>
+                        <span class="tt-orbit mars" aria-hidden="true"><span class="tt-world mars"></span></span>
+                        <span class="tt-world earth"></span>
+                        <span class="tt-static-labels" aria-hidden="true">
+                            <span class="tt-static-label earth">Earth</span>
+                            <span class="tt-static-label moon">Moon</span>
+                            <span class="tt-static-label mars">Mars</span>
+                        </span>
                     </div>
                 </section>
                 <div class="section-heading">
