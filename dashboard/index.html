@@ -5978,7 +5978,7 @@
                 const message = document.getElementById('scientific-source-lock-message');
                 if (notice && message) {
                     message.textContent = `${target === 'earth' ? 'Earth' : target === 'moon' ? 'Moon' : 'Mars'} view selected. The imported terrain ranking remains available; additional legacy views are paused.`;
-                    notice.hidden = false;
+                    notice.hidden = true;
                 }
                 return;
             }
@@ -6609,7 +6609,7 @@
                 const notice = document.getElementById('scientific-source-lock-notice');
                 const message = document.getElementById('scientific-source-lock-message');
                 if (message) message.textContent = 'Legacy scientific scores are paused pending complete data validation. Imported terrain records remain available in Global Search.';
-                if (notice) notice.hidden = !terrainViewsReady;
+                if (notice) notice.hidden = terrainViewsReady;
                 if (!terrainViewsReady) {
                     lockSection('explore-section', 'Explore Sites is waiting for verified data');
                     lockSection('validation-section', 'Validation is waiting for verified data');
@@ -6629,7 +6629,7 @@
                 const notice = document.getElementById('scientific-source-lock-notice');
                 const message = document.getElementById('scientific-source-lock-message');
                 if (message) message.textContent = 'Legacy scientific scores are paused because the data validation record is unavailable.';
-                if (notice) notice.hidden = !terrainViewsReady;
+                if (notice) notice.hidden = terrainViewsReady;
                 if (!terrainViewsReady) {
                     lockSection('explore-section', 'Explore Sites is waiting for verified data');
                     lockSection('validation-section', 'Validation is waiting for verified data');
