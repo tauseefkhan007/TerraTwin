@@ -1083,6 +1083,11 @@
         .map-search-status.error { color: #ffb994; }
         .results-load-error { margin: 0 16px; padding: 8px 10px; border: 1px solid #a66b52; border-radius: 4px; background: rgba(82, 39, 30, 0.72); color: #ffd2b6; font-size: 0.68rem; line-height: 1.4; }
         .results-load-error[hidden] { display: none !important; }
+        .source-integrity-banner { display: grid; grid-template-columns: auto minmax(0, 1fr) auto; align-items: center; gap: 10px; margin: 8px 16px 0; padding: 10px 12px; border: 1px solid rgba(224, 138, 109, .72); border-radius: 7px; background: rgba(93, 39, 34, .9); color: #ffe0d5; font-size: .68rem; line-height: 1.4; }
+        .source-integrity-banner strong { color: #ffd783; font-size: .61rem; letter-spacing: .08em; white-space: nowrap; }
+        .source-integrity-banner a { color: #bfeeff; white-space: nowrap; }
+        .source-integrity-banner[hidden] { display: none !important; }
+        @media (max-width: 760px) { .source-integrity-banner { grid-template-columns: 1fr; gap: 5px; } .source-integrity-banner a { white-space: normal; } }
         .demo-ranking-label { width: fit-content; max-width: calc(100% - 20px); margin: 0 10px 8px; padding: 4px 7px; border: 1px solid #8b7440; border-radius: 3px; background: rgba(89, 66, 21, 0.28); color: #e6d29a; font-size: 0.62rem; line-height: 1.35; }
         .validation-panel { display: grid; grid-template-columns: minmax(0, 1fr); gap: 8px; min-width: 0; margin-top: 12px; }
         #validation-content { min-width: 0; }
@@ -2490,6 +2495,11 @@
             </div>
         </div>
         <div class="results-load-error" id="results-load-error" role="alert" aria-live="assertive" hidden></div>
+        <div class="source-integrity-banner" id="scientific-source-lock-notice" role="alert" aria-live="assertive" hidden>
+            <strong>SCIENCE DATA LOCKED</strong>
+            <span id="scientific-source-lock-message">Unverified scientific outputs are hidden until the official Resources-tab audit passes.</span>
+            <a href="https://www.spaceappschallenge.org/2026/challenges/permanent-moon-base-locations-and-mars/?tab=resources" target="_blank" rel="noopener noreferrer">View approved resources</a>
+        </div>
 
     <!-- MAIN APP CONTENT -->
     <main>
@@ -6305,11 +6315,54 @@
 
         window.addEventListener('resize', onWindowResize3D);
 
+        async function enforceOfficialSourceGate() {
+            try {
+                const response = await fetch('source_lock.json', { cache: 'no-store' });
+                if (!response.ok) throw new Error(`source_lock.json HTTP ${response.status}`);
+                const audit = await response.json();
+                window.__terratwinSourceLock = audit;
+                if (audit.ready === true && audit.status === 'ready') return true;
+                const notice = document.getElementById('scientific-source-lock-notice');
+                const message = document.getElementById('scientific-source-lock-message');
+                if (message) message.textContent = audit.message || 'Unverified scientific outputs are hidden until the official Resources-tab audit passes.';
+                if (notice) notice.hidden = false;
+                ['explore-section', 'validation-section', 'compare-section', 'science-section', 'calculator-tab'].forEach(id => {
+                    const node = document.getElementById(id);
+                    if (node) node.hidden = true;
+                });
+                ['tab-map', 'tab-terrain3d', 'tab-data'].forEach(id => {
+                    const node = document.getElementById(id);
+                    if (node) { node.hidden = true; node.setAttribute('aria-disabled', 'true'); }
+                });
+                ['site-score-box', 'site-metrics', 'validation-content'].forEach(id => {
+                    const node = document.getElementById(id);
+                    if (node) node.hidden = true;
+                });
+                return false;
+            } catch (error) {
+                const notice = document.getElementById('scientific-source-lock-notice');
+                const message = document.getElementById('scientific-source-lock-message');
+                if (message) message.textContent = 'The source-lock audit is unavailable; scientific outputs remain hidden for safety.';
+                if (notice) notice.hidden = false;
+                ['explore-section', 'validation-section', 'compare-section', 'science-section', 'calculator-tab'].forEach(id => {
+                    const node = document.getElementById(id);
+                    if (node) node.hidden = true;
+                });
+                ['tab-map', 'tab-terrain3d', 'tab-data'].forEach(id => {
+                    const node = document.getElementById(id);
+                    if (node) node.hidden = true;
+                });
+                return false;
+            }
+        }
+
         // INITIALIZATION ON LOAD
-        window.addEventListener('load', () => {
+        window.addEventListener('load', async () => {
+            const officialSourceLockPassed = await enforceOfficialSourceGate();
             initializeStartHereHint();
             organizeDashboardSections();
             observeDashboardSections();
+            if (!officialSourceLockPassed) return;
             initializeDashboardControls();
             initializeSitePhotoLightbox();
             initializeMapResizeObserver();
