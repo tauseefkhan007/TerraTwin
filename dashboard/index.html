@@ -5846,6 +5846,27 @@
         // SWITCH TARGET
         function switchTarget(target) {
             if (!['earth', 'moon', 'mars'].includes(target)) return;
+            if (window.__terratwinSourceLock?.ready !== true) {
+                currentView = target;
+                if (target !== 'earth') currentTarget = target;
+                ['earth', 'moon', 'mars'].forEach(planet => {
+                    const button = document.getElementById(`btn-target-${planet}`);
+                    if (!button) return;
+                    button.classList.toggle('active', target === planet);
+                    button.setAttribute('aria-pressed', String(target === planet));
+                });
+                const badge = document.getElementById('target-badge');
+                if (badge) badge.innerText = target === 'earth'
+                    ? 'Earth · Candidate network'
+                    : target === 'moon' ? 'Target · Lunar south pole' : 'Target · Mars Jezero crater';
+                const notice = document.getElementById('scientific-source-lock-notice');
+                const message = document.getElementById('scientific-source-lock-message');
+                if (notice && message) {
+                    message.textContent = `${target === 'earth' ? 'Earth' : target === 'moon' ? 'Moon' : 'Mars'} view selected. Scientific outputs remain locked until the official source audit passes.`;
+                    notice.hidden = false;
+                }
+                return;
+            }
             const targetChanged = currentView !== target;
             if (targetChanged) siteNavigationInFlight = false;
             const sortControl = document.getElementById('leaderboard-sort');
